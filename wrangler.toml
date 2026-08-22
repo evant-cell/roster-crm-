@@ -2,4 +2,6 @@ name = "roster-crm"
 compatibility_date = "2025-01-01"
 pages_build_output_dir = "./public"
 
-# KV binding "KV" is configured in the Cloudflare dashboard (Settings, Bindings), not here.
+[[kv_namespaces]]
+binding = "KV"
+id = "91064d05d30a4b1380047bfc685ff299"
