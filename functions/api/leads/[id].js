@@ -1,5 +1,5 @@
 import { query, update, insert } from '../../lib/db.js';
-import { json, error, readJson } from '../../lib/http.js';
+import { json, error, readJson, isUuid } from '../../lib/http.js';
 
 const STAGES = ['new', 'contacted', 'qualified', 'contracted', 'lost'];
 const STAGE_LABELS = {
@@ -17,6 +17,7 @@ const PATCHABLE_FIELDS = [
 
 export async function onRequestGet({ params, env }) {
   const { id } = params;
+  if (!isUuid(id)) return error('Lead not found.', 404);
   let leads;
   try {
     leads = await query(env, 'leads', { select: '*', filters: [`id=eq.${id}`], limit: 1 });
@@ -42,6 +43,7 @@ export async function onRequestGet({ params, env }) {
 
 export async function onRequestPatch({ request, params, env }) {
   const { id } = params;
+  if (!isUuid(id)) return error('Lead not found.', 404);
   const body = await readJson(request);
   if (body === null) return error('Invalid JSON body.');
 
@@ -91,6 +93,7 @@ export async function onRequestPatch({ request, params, env }) {
 
 export async function onRequestDelete({ params, env }) {
   const { id } = params;
+  if (!isUuid(id)) return error('Lead not found.', 404);
   let updated;
   try {
     const rows = await update(env, 'leads', [`id=eq.${id}`], { archived_at: new Date().toISOString() });

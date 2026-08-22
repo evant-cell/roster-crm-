@@ -61,5 +61,5 @@ export async function renderLeads() {
         <td>${(l.tags || []).map((t) => `<span class="tag">${esc(t)}</span>`).join('')}</td>
       </tr>`).join('')
     : `<tr><td colspan="7" class="empty">Nothing matches. Clear the filter or search.</td></tr>`;
-  $$('#rows tr[data-id]').forEach((row) => row.addEventListener('click', () => openLead(+row.dataset.id)));
+  $$('#rows tr[data-id]').forEach((row) => row.addEventListener('click', () => openLead(row.dataset.id)));
 }

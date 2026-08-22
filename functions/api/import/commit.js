@@ -73,7 +73,13 @@ export async function onRequestPost({ request, env }) {
       continue;
     }
     const existing = byEmail.get(email) || {};
-    byEmail.set(email, { ...existing, ...fields, email });
+    // Later rows win, but only where they actually carry a value. A blank
+    // cell further down the file must not wipe what an earlier row set.
+    const merged = { ...existing };
+    for (const [key, value] of Object.entries(fields)) {
+      if (value !== '') merged[key] = value;
+    }
+    byEmail.set(email, { ...merged, email });
   }
 
   function buildNewLeadRow(fields) {

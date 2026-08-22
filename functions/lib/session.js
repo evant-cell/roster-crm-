@@ -39,8 +39,16 @@ export async function verifyValue(signed, secret) {
   if (idx <= 0) return null;
   const value = signed.slice(0, idx);
   const sig = signed.slice(idx + 1);
+  let sigBytes;
+  try {
+    sigBytes = b64urlDecode(sig);
+  } catch {
+    // A tampered or truncated cookie is not valid base64url. Treat it as a
+    // failed signature instead of letting atob throw out of the request.
+    return null;
+  }
   const key = await hmacKey(secret);
-  const ok = await crypto.subtle.verify('HMAC', key, b64urlDecode(sig), enc.encode(value));
+  const ok = await crypto.subtle.verify('HMAC', key, sigBytes, enc.encode(value));
   return ok ? value : null;
 }
 

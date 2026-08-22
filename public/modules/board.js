@@ -25,7 +25,7 @@ export async function renderBoard() {
     }</div></div>`;
   }).join('');
   $$('#board .card').forEach((c) => {
-    c.addEventListener('click', () => openLead(+c.dataset.id));
-    c.addEventListener('keydown', (e) => { if (e.key === 'Enter') openLead(+c.dataset.id); });
+    c.addEventListener('click', () => openLead(c.dataset.id));
+    c.addEventListener('keydown', (e) => { if (e.key === 'Enter') openLead(c.dataset.id); });
   });
 }

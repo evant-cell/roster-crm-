@@ -37,13 +37,13 @@ export async function renderFollow() {
 
   $('#follow').innerHTML =
     sec('Overdue', 'var(--red)', overdue.leads, (l) => `Was due ${fmt(l.next_followup)}, ${-days(l.next_followup)} days ago. Last contact ${rel(l.last_contacted)}.`) +
-    sec('Due today', 'var(--gold)', dueToday.leads, (l) => `${l.notes || 'No notes yet.'}`) +
-    sec('This week', 'var(--blue)', week, (l) => `Due ${fmt(l.next_followup)}. ${l.notes || ''}`) +
+    sec('Due today', 'var(--gold)', dueToday.leads, (l) => `${l.notes ? esc(l.notes) : 'No notes yet.'}`) +
+    sec('This week', 'var(--blue)', week, (l) => `Due ${fmt(l.next_followup)}. ${esc(l.notes || '')}`) +
     (staleCount ? `<div class="note-banner"><b>${staleCount} lead${staleCount > 1 ? 's have' : ' has'}</b> had no contact in ${state.settings ? state.settings.stale_days : 14}+ days. <button class="btn sm" style="margin-left:auto" id="go-stale">Show them</button></div>` : '');
 
-  $$('#follow .frow').forEach((row) => row.addEventListener('click', (e) => { if (e.target.closest('button')) return; openLead(+row.dataset.id); }));
+  $$('#follow .frow').forEach((row) => row.addEventListener('click', (e) => { if (e.target.closest('button')) return; openLead(row.dataset.id); }));
   $$('#follow [data-act]').forEach((b) => b.addEventListener('click', async () => {
-    const id = +b.dataset.id;
+    const id = b.dataset.id;
     try {
       if (b.dataset.act === 'done') {
         const { lead } = await api.addActivity(id, { type: 'call', body: 'Touch logged from follow-ups list.', touch: true });

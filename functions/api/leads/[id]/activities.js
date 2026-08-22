@@ -1,11 +1,12 @@
 import { query, update, insert } from '../../../lib/db.js';
-import { json, error, readJson } from '../../../lib/http.js';
+import { json, error, readJson, isUuid } from '../../../lib/http.js';
 import { todayChicago } from '../../../lib/dates.js';
 
 const TYPES = ['note', 'call', 'email', 'stage', 'import'];
 
 export async function onRequestPost({ request, params, env }) {
   const { id } = params;
+  if (!isUuid(id)) return error('Lead not found.', 404);
   const body = await readJson(request);
   if (body === null) return error('Invalid JSON body.');
 
