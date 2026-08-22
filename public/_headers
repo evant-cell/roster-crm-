@@ -7,3 +7,15 @@
 
 /api/*
   Cache-Control: no-store
+
+/*.js
+  Cache-Control: no-cache
+
+/*.css
+  Cache-Control: no-cache
+
+/modules/*
+  Cache-Control: no-cache
+
+/
+  Cache-Control: no-cache
