@@ -61,7 +61,8 @@ export async function getLeads(params) {
 }
 export async function createLead(data) {
   if (DEMO) return demo.createLead(data);
-  return request('/api/leads', { method: 'POST', body: data });
+  const r = await request('/api/leads', { method: 'POST', body: data });
+  return r.lead || r;
 }
 export async function getLead(id) {
   if (DEMO) return demo.getLead(id);
@@ -69,7 +70,8 @@ export async function getLead(id) {
 }
 export async function updateLead(id, patch) {
   if (DEMO) return demo.updateLead(id, patch);
-  return request(`/api/leads/${id}`, { method: 'PATCH', body: patch });
+  const r = await request(`/api/leads/${id}`, { method: 'PATCH', body: patch });
+  return r.lead || r;
 }
 export async function deleteLead(id) {
   if (DEMO) return demo.deleteLead(id);
@@ -81,7 +83,8 @@ export async function addActivity(id, activity) {
 }
 export async function snoozeLead(id, days) {
   if (DEMO) return demo.snoozeLead(id, days);
-  return request(`/api/leads/${id}/snooze`, { method: 'POST', body: { days } });
+  const r = await request(`/api/leads/${id}/snooze`, { method: 'POST', body: { days } });
+  return r.lead || r;
 }
 
 // ---------- import ----------
