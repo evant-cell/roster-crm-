@@ -55,9 +55,13 @@ export async function onRequestGet({ request, env }) {
     return errorPage('Could not decode ID token.');
   }
 
-  const allowed = (env.ALLOWED_EMAIL || '').trim().toLowerCase();
+  // ALLOWED_EMAIL is a comma separated list of Google addresses.
+  const allowed = (env.ALLOWED_EMAIL || '')
+    .split(',')
+    .map((e) => e.trim().toLowerCase())
+    .filter(Boolean);
   const idEmail = (id.email || '').trim().toLowerCase();
-  if (!id.email_verified || !allowed || idEmail !== allowed) {
+  if (!id.email_verified || !allowed.length || !allowed.includes(idEmail)) {
     // Discard tokens, do not persist anything for a non-allowlisted account.
     return errorPage('This Google account is not authorized.', 403);
   }
@@ -65,15 +69,15 @@ export async function onRequestGet({ request, env }) {
     return errorPage('No refresh token returned. Revoke the app at myaccount.google.com and try again.');
   }
 
-  await env.KV.put(KV.refresh, tokens.refresh_token);
+  await env.KV.put(KV.refresh(idEmail), tokens.refresh_token);
   const expiresAt = Date.now() + Math.max(0, tokens.expires_in - 60) * 1000;
   await env.KV.put(
-    KV.access,
+    KV.access(idEmail),
     JSON.stringify({ token: tokens.access_token, expiresAt }),
     { expirationTtl: Math.max(60, tokens.expires_in - 60) }
   );
 
-  const session = await createSession(env, id.email);
+  const session = await createSession(env, idEmail);
 
   const headers = new Headers();
   headers.append('location', '/');

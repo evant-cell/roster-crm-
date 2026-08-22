@@ -97,12 +97,12 @@ export function decodeIdToken(idToken) {
 
 // Returns a fresh Gmail access token, refreshing via the stored refresh token
 // when the cached access token is missing or close to expiry.
-export async function getAccessToken(env) {
-  const cached = await env.KV.get(KV.access, { type: 'json' });
+export async function getAccessToken(env, email) {
+  const cached = await env.KV.get(KV.access(email), { type: 'json' });
   if (cached && cached.expiresAt > Date.now() + 5000) {
     return cached.token;
   }
-  const refresh = await env.KV.get(KV.refresh);
+  const refresh = await env.KV.get(KV.refresh(email));
   if (!refresh) throw new Error('No refresh token; sign in required.');
   const tok = await refreshAccess({
     clientId: env.GOOGLE_CLIENT_ID,
@@ -111,7 +111,7 @@ export async function getAccessToken(env) {
   });
   const expiresAt = Date.now() + Math.max(0, tok.expires_in - 60) * 1000;
   await env.KV.put(
-    KV.access,
+    KV.access(email),
     JSON.stringify({ token: tok.access_token, expiresAt }),
     { expirationTtl: Math.max(60, tok.expires_in - 60) }
   );

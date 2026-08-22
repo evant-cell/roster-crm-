@@ -35,7 +35,7 @@ export async function onRequestPost({ request, env, data }) {
 
   let accessToken;
   try {
-    accessToken = await getAccessToken(env);
+    accessToken = await getAccessToken(env, fromEmail);
   } catch (e) {
     return error('Could not get a Gmail access token. Reconnect your Google account.', 401);
   }

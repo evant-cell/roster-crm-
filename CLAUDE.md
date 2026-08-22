@@ -19,8 +19,8 @@ Single-user CRM for Evan to track leads through a simple pipeline (new, contacte
 1. Google OAuth 2.0, authorization-code flow with PKCE (`functions/lib/google.js`, `functions/api/auth/*.js`).
 2. Scopes: `openid email https://www.googleapis.com/auth/gmail.send`.
 3. `access_type=offline` and `prompt=consent` on every auth request so a refresh token always comes back.
-4. Server-side email allowlist of one address, `ALLOWED_EMAIL`, compared lowercase against the ID token's email claim. Any other Google account is rejected with 403 and its tokens are discarded, never written to KV.
-5. Refresh token in KV at `oauth:refresh`. Access token cached at `oauth:access` with a short TTL.
+4. Server-side email allowlist, `ALLOWED_EMAIL` (comma separated), compared lowercase against the ID token's email claim. Any other Google account is rejected with 403 and its tokens are discarded, never written to KV.
+5. Refresh token in KV at `oauth:refresh:<email>`. Access token cached at `oauth:access:<email>` with a short TTL. Each allowed user sends from their own Gmail.
 6. Session cookie is HttpOnly, Secure, SameSite=Lax, 30 days, carries only a signed session ID. Session record at `session:<id>` in KV.
 7. `functions/_middleware.js` gates everything under `/api/*` except `/api/auth/*`, which stays public so the frontend can check `/api/auth/status` and start the login flow while signed out. An unauthenticated request to a protected route gets a 401 JSON body, not a redirect. Static files are always public, the frontend shows its own login screen when signed out.
 

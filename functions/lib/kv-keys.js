@@ -1,6 +1,6 @@
 export const KV = {
-  refresh: 'oauth:refresh',
-  access: 'oauth:access',
+  refresh: (email) => `oauth:refresh:${email}`,
+  access: (email) => `oauth:access:${email}`,
   session: (id) => `session:${id}`,
 };
 
