@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Roster</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<div class="login-screen" id="login-screen">
+  <div class="login-card">
+    <div class="brand-mark">R</div>
+    <h1>Roster</h1>
+    <p>A quiet, single-user CRM for tracking leads, follow-ups, and the deals in between.</p>
+    <a class="google-btn" id="login-btn" href="/api/auth/login">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="#4285F4" d="M23.5 12.27c0-.85-.08-1.67-.22-2.45H12v4.64h6.46c-.28 1.5-1.13 2.78-2.41 3.63v3h3.9c2.28-2.1 3.55-5.2 3.55-8.82z"/><path fill="#34A853" d="M12 24c3.24 0 5.96-1.07 7.95-2.91l-3.9-3c-1.08.73-2.46 1.16-4.05 1.16-3.11 0-5.75-2.1-6.69-4.93H1.28v3.1C3.26 21.3 7.3 24 12 24z"/><path fill="#FBBC05" d="M5.31 14.32A7.19 7.19 0 0 1 4.94 12c0-.81.14-1.6.37-2.32v-3.1H1.28A11.97 11.97 0 0 0 0 12c0 1.94.46 3.77 1.28 5.42l4.03-3.1z"/><path fill="#EA4335" d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.44-3.44C17.95 1.19 15.23 0 12 0 7.3 0 3.26 2.7 1.28 6.58l4.03 3.1C6.25 6.85 8.89 4.75 12 4.75z"/></svg>
+      Sign in with Google
+    </a>
+  </div>
+</div>
+
+<div class="app hidden" id="app">
+  <aside class="side">
+    <div class="brand"><div class="brand-mark">R</div><div class="brand-name">Roster</div><div class="brand-sub">v0.1</div></div>
+    <nav class="nav" id="nav">
+      <button data-view="leads" class="active"><svg viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h10"/></svg>Leads<span class="count" id="n-leads">0</span></button>
+      <button data-view="board"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="5" height="16" rx="1"/><rect x="10" y="4" width="5" height="10" rx="1"/><rect x="17" y="4" width="4" height="13" rx="1"/></svg>Board</button>
+      <button data-view="follow"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>Follow-ups<span class="count" id="n-follow">0</span></button>
+      <button data-view="import"><svg viewBox="0 0 24 24"><path d="M12 3v12M7 10l5 5 5-5M4 19h16"/></svg>Import</button>
+      <button data-view="settings"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M4.9 19.1L7 17M17 7l2.1-2.1"/></svg>Settings</button>
+    </nav>
+    <div class="side-foot">
+      <div class="who"><div class="avatar" id="who-avatar">--</div><div><div style="font-weight:600" id="who-email">-</div><button class="signout" id="signout">Sign out</button></div></div>
+      <button class="theme-toggle" id="theme">Switch to dark</button>
+    </div>
+  </aside>
+
+  <div class="main">
+    <header class="top">
+      <div><h1 id="title">Leads</h1></div>
+      <span class="sub" id="subtitle"></span>
+      <label class="search"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg><input id="q" placeholder="Search name, company, email" /></label>
+      <button class="btn primary" id="new-lead">+ New lead</button>
+    </header>
+
+    <div class="content">
+      <!-- LEADS -->
+      <section class="view active" data-view="leads">
+        <div class="stats" id="stats"></div>
+        <div class="toolbar">
+          <div class="chips" id="chips"></div>
+          <div class="right"><span id="rowcount"></span><a class="btn sm ghost" id="export" href="/api/export" download>Export CSV</a></div>
+        </div>
+        <div class="tablewrap">
+          <table>
+            <thead><tr>
+              <th><button data-sort="name">Name</button></th>
+              <th><button data-sort="company">Company</button></th>
+              <th>Contact</th>
+              <th><button data-sort="stage">Stage</button></th>
+              <th><button data-sort="last_contacted">Last contacted</button></th>
+              <th><button data-sort="next_followup">Next follow-up</button></th>
+              <th>Tags</th>
+            </tr></thead>
+            <tbody id="rows"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- BOARD -->
+      <section class="view" data-view="board">
+        <div class="board" id="board"></div>
+      </section>
+
+      <!-- FOLLOW-UPS -->
+      <section class="view" data-view="follow" id="follow"></section>
+
+      <!-- IMPORT -->
+      <section class="view" data-view="import">
+        <div class="steps" id="steps">
+          <div class="step on"><span class="k">1</span>Upload file</div>
+          <div class="step"><span class="k">2</span>Match columns</div>
+          <div class="step"><span class="k">3</span>Review and import</div>
+        </div>
+        <div class="panel" id="import-panel"></div>
+      </section>
+
+      <!-- SETTINGS -->
+      <section class="view" data-view="settings">
+        <div class="set-grid" id="settings-grid"></div>
+      </section>
+    </div>
+  </div>
+</div>
+
+<div class="scrim" id="scrim"></div>
+<aside class="drawer" id="drawer" aria-hidden="true"></aside>
+<div class="toast" id="toast"></div>
+
+<script type="module" src="app.js"></script>
+</body>
+</html>
