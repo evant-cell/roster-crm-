@@ -122,11 +122,19 @@ tbody tr.sel{background:var(--accent-soft)}
 .col-h{display:flex;align-items:center;gap:8px;padding:10px 12px;border-bottom:1px solid var(--line);font-weight:600;font-size:13px}
 .col-h .n{margin-left:auto;font-family:var(--mono);color:var(--muted);font-size:12px}
 .col-b{padding:8px;display:flex;flex-direction:column;gap:8px}
-.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:10px 12px;cursor:pointer;display:flex;flex-direction:column;gap:5px;transition:border-color .12s}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:10px 12px;cursor:pointer;display:flex;flex-direction:column;gap:5px;transition:border-color .12s,opacity .12s}
 .card:hover{border-color:var(--accent)}
+.card.dragging{opacity:.4}
 .card .co{font-size:12px}
 .card .meta{display:flex;justify-content:space-between;align-items:center;font-size:12px;color:var(--muted)}
 .card .val{font-family:var(--mono);font-variant-numeric:tabular-nums}
+.col-b{transition:background-color .12s,border-color .12s}
+.col-b.drop-target{background:var(--accent-soft);outline:1.5px dashed var(--accent);outline-offset:-4px;border-radius:var(--radius)}
+.card-stage-mobile{display:none}
+@media (pointer:coarse){
+  .card-stage-mobile{display:block;border:1px solid var(--line);border-radius:6px;padding:5px 6px;background:var(--surface);font-size:12px;width:100%}
+}
+@media (prefers-reduced-motion:reduce){.card,.col-b{transition:none}}
 /* followups */
 .section{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);overflow:hidden}
 .section-h{display:flex;align-items:center;gap:8px;padding:10px 16px;border-bottom:1px solid var(--line);font-weight:600;font-size:13px}
