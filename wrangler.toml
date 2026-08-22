@@ -5,3 +5,10 @@ pages_build_output_dir = "./public"
 [[kv_namespaces]]
 binding = "KV"
 id = "91064d05d30a4b1380047bfc685ff299"
+
+# Plain (non-secret) vars live here because Pages manages vars through wrangler.toml.
+# Secrets (GOOGLE_CLIENT_SECRET, SUPABASE_SERVICE_KEY, SESSION_SECRET) are set in the dashboard.
+[vars]
+ALLOWED_EMAIL = "tianamomeni@gmail.com"
+SUPABASE_URL = "https://vuqwdeddgipbtfumirrg.supabase.co"
+GOOGLE_CLIENT_ID = "1053713864837-mk5rt5j2c1fj4mvv4a5f2ugu58f3bijc.apps.googleusercontent.com"
