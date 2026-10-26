@@ -276,3 +276,5 @@ kbd{font-family:var(--mono);font-size:11px;border:1px solid var(--line);border-r
 .field-row .in-list{flex-basis:100%;display:flex;align-items:center;gap:6px;font-size:12.5px;color:var(--ink-2)}
 .field-row .in-list input{flex:0 0 auto;padding:0;border:0}
 td.cf{white-space:nowrap}
+td.notes{min-width:200px;max-width:280px;font-size:12.5px;color:var(--ink-2)}
+td.notes div{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}

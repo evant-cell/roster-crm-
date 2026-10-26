@@ -90,7 +90,8 @@ export async function renderLeads() {
         <td class="due">${l.last_contacted ? fmt(l.last_contacted) + ' <span style="opacity:.6">' + rel(l.last_contacted) + '</span>' : '<span style="color:var(--muted)">never</span>'}</td>
         <td class="due ${isOpen(l) ? dueClass(l.next_followup) : 'none'}">${isOpen(l) ? dueText(l.next_followup) : 'closed'}</td>
         <td>${(l.tags || []).map((t) => `<span class="tag">${esc(t)}</span>`).join('')}</td>
+        <td class="notes" title="${esc(l.notes)}"><div>${esc(l.notes)}</div></td>
       </tr>`).join('')
-    : `<tr><td colspan="${7 + fields.length}" class="empty">Nothing matches. Clear the filter or search.</td></tr>`;
+    : `<tr><td colspan="${8 + fields.length}" class="empty">Nothing matches. Clear the filter or search.</td></tr>`;
   $$('#rows tr[data-id]').forEach((row) => row.addEventListener('click', () => openLead(row.dataset.id)));
 }
