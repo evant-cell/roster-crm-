@@ -74,7 +74,6 @@ function paint() {
   if (!current) return;
   const { lead: l, activities } = current;
   const qual = l.qual || [0, 0, 0, 0];
-  const score = qual.filter(Boolean).length;
   const labels = checklist();
   const dr = $('#drawer');
 
@@ -111,7 +110,6 @@ function paint() {
       </div>
       <div class="d-sec"><h3>Potential Services <span class="line"></span></h3>
         <div class="qual" id="qual">${labels.map((q, i) => `<label><input type="checkbox" data-i="${i}" ${qual[i] ? 'checked' : ''}> ${esc(q)}</label>`).join('')}</div>
-        <div class="score"><span id="score-txt">${score} of ${labels.length}</span><div class="bar"><i id="score-bar" style="width:${(score / labels.length) * 100}%"></i></div><span>${score === labels.length ? 'Ready to qualify' : score >= 2 ? 'Getting there' : 'Early'}</span></div>
       </div>
       <div class="d-sec"><h3>Activity <span class="line"></span></h3>
         <div class="compose"><textarea id="note-txt" placeholder="Add a note, log a call, or paste an email"></textarea>
@@ -181,8 +179,6 @@ function wire(l) {
     qual[+c.dataset.i] = c.checked;
     const labels = checklist();
     const s = qual.filter(Boolean).length;
-    $('#score-txt', dr).textContent = `${s} of ${labels.length}`;
-    $('#score-bar', dr).style.width = (s / labels.length) * 100 + '%';
     try {
       const updated = await api.updateLead(l.id, { qual });
       current.lead = updated;
