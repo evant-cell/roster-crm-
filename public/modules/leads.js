@@ -1,6 +1,6 @@
 // Leads view: stat tiles, filter chips, search/sort backed table.
 
-import { $, $$, esc, money, fmt, rel, dueClass, dueText, isOpen, toast, STAGE_LABEL, STAGES, updateNavCounts, customFields } from './ui.js';
+import { $, $$, esc, money, fmt, rel, dueClass, dueText, isOpen, toast, STAGE_LABEL, STAGES, updateNavCounts, customFields, customSortKey, markSorted } from './ui.js';
 import { state } from './state.js';
 import * as api from './api.js';
 import { openLead } from './drawer.js';
@@ -31,12 +31,15 @@ export function customCell(f, lead) {
 function customHeader(f) {
   const th = document.createElement('th');
   th.className = 'cf';
-  th.textContent = f.label;
+  const btn = document.createElement('button');
+  btn.dataset.sort = customSortKey(f);
+  btn.textContent = f.label;
+  th.appendChild(btn);
   return th;
 }
 
 function paintCustomHeaders(startFields, endFields) {
-  const row = $('thead tr');
+  const row = $('#leads-head');
   $$('th.cf', row).forEach((th) => th.remove());
   const nameHeader = row.firstElementChild;
   const notesHeader = row.lastElementChild;
@@ -77,14 +80,20 @@ export async function renderLeads() {
   $$('#chips .chip').forEach((chip) => chip.addEventListener('click', () => { state.filter = chip.dataset.f; renderLeads(); }));
 
   $('#rowcount').textContent = `${state.leads.length} of ${c.all || 0}`;
-  $$('thead th button[data-sort]').forEach((b) => {
-    b.classList.toggle('sorted', b.dataset.sort === state.sortKey);
-    b.textContent = b.textContent.replace(/[ ↑↓]+$/, '') + (b.dataset.sort === state.sortKey ? (state.sortDir > 0 ? ' ↑' : ' ↓') : '');
-  });
-
   const startFields = listFields('start');
   const endFields = listFields('end');
   paintCustomHeaders(startFields, endFields);
+
+  // Header clicks sort by that column. Clicking the sorted column flips it.
+  const sortButtons = $$('#leads-head button[data-sort]');
+  markSorted(sortButtons, 'sort', state.sortKey, state.sortDir);
+  sortButtons.forEach((b) => {
+    b.onclick = () => {
+      if (state.sortKey === b.dataset.sort) state.sortDir *= -1;
+      else { state.sortKey = b.dataset.sort; state.sortDir = 1; }
+      renderLeads();
+    };
+  });
 
   $('#rows').innerHTML = state.leads.length
     ? state.leads.map((l) => `<tr data-id="${l.id}" class="${state.selected === l.id ? 'sel' : ''}">

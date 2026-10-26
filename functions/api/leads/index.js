@@ -94,10 +94,23 @@ export async function onRequestGet({ request, env }) {
   else if (filter === 'today') filtered = filtered.filter(isToday);
   else if (filter === 'stale') filtered = filtered.filter(isStale);
 
-  const sortKey = SORT_COLUMNS.has(sort) ? sort : 'created_at';
+  // sort=custom.<key> sorts by a custom field (for example the Type column).
+  // Text compares without case. Blank values always go last.
+  let valueOf;
+  if (sort.startsWith('custom.')) {
+    const key = sort.slice('custom.'.length);
+    valueOf = (lead) => {
+      const v = (lead.custom || {})[key];
+      if (v === undefined || v === null || v === '') return null;
+      return typeof v === 'string' ? v.toLowerCase() : v;
+    };
+  } else {
+    const sortKey = SORT_COLUMNS.has(sort) ? sort : 'created_at';
+    valueOf = (lead) => lead[sortKey];
+  }
   filtered = filtered.slice().sort((a, b) => {
-    const av = a[sortKey];
-    const bv = b[sortKey];
+    const av = valueOf(a);
+    const bv = valueOf(b);
     if (av == null && bv == null) return 0;
     if (av == null) return 1;
     if (bv == null) return -1;

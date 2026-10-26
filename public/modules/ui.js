@@ -23,6 +23,18 @@ export function customFields(settings) {
   return settings && Array.isArray(settings.custom_fields) ? settings.custom_fields : [];
 }
 
+// Sort key for a custom field column, understood by GET /api/leads.
+export const customSortKey = (f) => `custom.${f.key}`;
+
+// Puts an up or down arrow on the sorted header button and clears the rest.
+export function markSorted(buttons, attr, key, dir) {
+  buttons.forEach((b) => {
+    const on = b.dataset[attr] === key;
+    b.classList.toggle('sorted', on);
+    b.textContent = b.textContent.replace(/[ ↑↓]+$/, '') + (on ? (dir > 0 ? ' ↑' : ' ↓') : '');
+  });
+}
+
 export const $ = (s, el = document) => el.querySelector(s);
 export const $$ = (s, el = document) => [...el.querySelectorAll(s)];
 

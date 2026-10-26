@@ -191,7 +191,7 @@ const demo = (() => {
   };
 
   // Sample values for the demo Type field.
-  const demoTypes = { 1: 'Potential Client', 2: 'Advocate', 3: 'Potential Client', 5: 'Advocate', 7: 'Potential Client', 8: 'Potential Client', 9: 'Advocate', 11: 'Potential Client', 13: 'Advocate' };
+  const demoTypes = { 1: 'Potential Client', 2: 'Advocate', 3: 'Potential Client', 5: 'Advocate', 7: 'Potential Client', 8: 'Potential Client', 9: 'Advocate', 11: 'Potential Client', 13: 'Advocate', 4: 'Advocate', 15: 'Potential Client', 16: 'Advocate', 18: 'Potential Client' };
   // A few sample people start out in Contacts, plus some LinkedIn-style ones.
   [4, 10, 14].forEach((id) => { const l = leads.find((x) => x.id === id); if (l) l.is_contact = true; });
   [
@@ -270,8 +270,15 @@ const demo = (() => {
     }
     const sortKey = params.sort || 'next_followup';
     const dir = params.dir === 'desc' ? -1 : 1;
+    const customKey = sortKey.startsWith('custom.') ? sortKey.slice('custom.'.length) : null;
+    const pick = (l) => {
+      if (!customKey) return l[sortKey];
+      const v = (l.custom || {})[customKey];
+      if (v === undefined || v === null || v === '') return null;
+      return typeof v === 'string' ? v.toLowerCase() : v;
+    };
     arr.sort((a, b) => {
-      let va = a[sortKey], vb = b[sortKey];
+      let va = pick(a), vb = pick(b);
       if (sortKey === 'stage') { va = STAGES.indexOf(va); vb = STAGES.indexOf(vb); }
       if (va == null && vb == null) return 0;
       if (va == null) return 1;

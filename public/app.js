@@ -56,11 +56,6 @@ function initTheme() {
 function initChrome() {
   $$('#nav button').forEach((b) => b.addEventListener('click', () => setView(b.dataset.view)));
 
-  $$('thead th button[data-sort]').forEach((b) => b.addEventListener('click', () => {
-    if (state.sortKey === b.dataset.sort) state.sortDir *= -1; else { state.sortKey = b.dataset.sort; state.sortDir = 1; }
-    if (state.view === 'leads') renderLeads();
-  }));
-
   let searchTimer = null;
   $('#q').addEventListener('input', (e) => {
     state.query = e.target.value;

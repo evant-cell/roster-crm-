@@ -1,7 +1,7 @@
 // Contacts view: everyone who is not in the pipeline yet. Each row has a
 // Make lead button that moves the person into Leads at the first stage.
 
-import { $, $$, esc, toast, updateNavCounts } from './ui.js';
+import { $, $$, esc, toast, updateNavCounts, customSortKey, markSorted } from './ui.js';
 import { state } from './state.js';
 import * as api from './api.js';
 import { openLead } from './drawer.js';
@@ -10,7 +10,10 @@ import { listFields, customCell } from './leads.js';
 function headerCell(f) {
   const th = document.createElement('th');
   th.className = 'cf';
-  th.textContent = f.label;
+  const btn = document.createElement('button');
+  btn.dataset.csort = customSortKey(f);
+  btn.textContent = f.label;
+  th.appendChild(btn);
   return th;
 }
 
@@ -33,7 +36,7 @@ export async function makeLead(id, name) {
 export async function renderContacts() {
   let data;
   try {
-    data = await api.getLeads({ kind: 'contacts', q: state.query || undefined, sort: 'name', dir: 'asc' });
+    data = await api.getLeads({ kind: 'contacts', q: state.query || undefined, sort: state.contactSortKey, dir: state.contactSortDir > 0 ? 'asc' : 'desc' });
   } catch (e) {
     toast(e.message);
     data = { leads: [], totals: null };
@@ -44,6 +47,16 @@ export async function renderContacts() {
   const startFields = listFields('start');
   const endFields = listFields('end');
   paintHeaders(startFields, endFields);
+
+  const sortButtons = $$('#contacts-head button[data-csort]');
+  markSorted(sortButtons, 'csort', state.contactSortKey, state.contactSortDir);
+  sortButtons.forEach((b) => {
+    b.onclick = () => {
+      if (state.contactSortKey === b.dataset.csort) state.contactSortDir *= -1;
+      else { state.contactSortKey = b.dataset.csort; state.contactSortDir = 1; }
+      renderContacts();
+    };
+  });
 
   const total = data.totals ? data.totals.contacts : contacts.length;
   $('#contact-count').textContent = state.query ? `${contacts.length} of ${total}` : `${total} contact${total === 1 ? '' : 's'}`;
