@@ -86,12 +86,12 @@ function paint() {
       <div><button class="btn sm primary" id="save-stages">Save stages</button></div>
     </div>
     <div class="set">
-      <h3>Qualifying checklist</h3>
-      <p>The boxes shown on every lead. When all are ticked the lead is flagged qualified.</p>
+      <h3>Potential Services</h3>
+      <p>The four service boxes shown on every lead. When all are ticked, Roster suggests moving the lead to Qualified.</p>
       <div style="display:flex;flex-direction:column;gap:8px" id="checklist-inputs">
         ${s.checklist.map((label, i) => `<div class="checklist-row"><input value="${esc(label)}" data-i="${i}"></div>`).join('')}
       </div>
-      <div><button class="btn sm primary" id="save-checklist">Save checklist</button></div>
+      <div><button class="btn sm primary" id="save-checklist">Save services</button></div>
     </div>
     <div class="set">
       <h3>Lead fields</h3>
@@ -172,10 +172,10 @@ function paint() {
 
   $('#save-checklist').addEventListener('click', async () => {
     const values = $$('#checklist-inputs input').map((i) => i.value.trim()).filter(Boolean);
-    if (values.length !== 4) { toast('All four checklist labels are required'); return; }
+    if (values.length !== 4) { toast('All four services need a name'); return; }
     try {
       state.settings = await api.updateSettings({ checklist: values });
-      toast('Checklist saved');
+      toast('Services saved');
       paint();
     } catch (e) {
       toast(e.message);

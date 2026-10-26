@@ -109,7 +109,7 @@ function paint() {
         <div class="field wide"><label>Tags</label><input value="${esc((l.tags || []).join(', '))}" data-k="tags" placeholder="comma separated"></div>
         <div class="field wide"><label>Notes</label><textarea data-k="notes" placeholder="Anything worth remembering">${esc(l.notes)}</textarea></div>
       </div>
-      <div class="d-sec"><h3>Qualifying checklist <span class="line"></span></h3>
+      <div class="d-sec"><h3>Potential Services <span class="line"></span></h3>
         <div class="qual" id="qual">${labels.map((q, i) => `<label><input type="checkbox" data-i="${i}" ${qual[i] ? 'checked' : ''}> ${esc(q)}</label>`).join('')}</div>
         <div class="score"><span id="score-txt">${score} of ${labels.length}</span><div class="bar"><i id="score-bar" style="width:${(score / labels.length) * 100}%"></i></div><span>${score === labels.length ? 'Ready to qualify' : score >= 2 ? 'Getting there' : 'Early'}</span></div>
       </div>
