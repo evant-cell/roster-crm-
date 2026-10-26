@@ -62,9 +62,13 @@ const STAGE_ALIASES = {
 };
 
 // Best-effort mapping from an arbitrary incoming stage string to one of the
-// five canonical stages. Unknown values fall back to 'new'.
-export function normalizeStage(value) {
+// five canonical stages. Renamed stage labels from Settings (stageLabels,
+// e.g. { contacted: 'Reached out' }) also match. Unknown values fall back to 'new'.
+export function normalizeStage(value, stageLabels = {}) {
   const key = String(value || '').trim().toLowerCase();
   if (!key) return 'new';
+  for (const [stage, label] of Object.entries(stageLabels || {})) {
+    if (String(label || '').trim().toLowerCase() === key) return stage;
+  }
   return STAGE_ALIASES[key] || 'new';
 }

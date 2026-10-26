@@ -52,6 +52,14 @@ export async function onRequestPost({ request, env }) {
   const extraTag = options.tag ? String(options.tag).trim() : null;
   const today = todayChicago();
 
+  let stageLabels = {};
+  try {
+    const labelRows = await query(env, 'settings', { select: 'value', filters: ['key=eq.stage_labels'], limit: 1 });
+    if (labelRows && labelRows[0] && labelRows[0].value) stageLabels = labelRows[0].value;
+  } catch {
+    // Fall back to the built-in stage aliases.
+  }
+
   let skipped = 0;
   let missingEmail = 0;
 
@@ -94,7 +102,7 @@ export async function onRequestPost({ request, env }) {
       company: fields.company || '',
       email: fields.email || '',
       phone: fields.phone || '',
-      stage: normalizeStage(fields.stage),
+      stage: normalizeStage(fields.stage, stageLabels),
       last_contacted: parseLooseDate(fields.last_contacted),
       next_followup: nextFollowup,
       source: fields.source || '',

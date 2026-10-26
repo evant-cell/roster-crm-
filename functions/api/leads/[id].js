@@ -78,10 +78,15 @@ export async function onRequestPatch({ request, params, env }) {
 
   if (stageChanged) {
     try {
+      // Stage names can be renamed in Settings (settings.stage_labels).
+      let label = STAGE_LABELS[patch.stage] || patch.stage;
+      const labelRows = await query(env, 'settings', { select: 'value', filters: ['key=eq.stage_labels'], limit: 1 });
+      const custom = labelRows && labelRows[0] && labelRows[0].value;
+      if (custom && custom[patch.stage]) label = custom[patch.stage];
       await insert(env, 'activities', [{
         lead_id: id,
         type: 'stage',
-        body: `Moved to ${STAGE_LABELS[patch.stage] || patch.stage}`,
+        body: `Moved to ${label}`,
       }], { returning: false });
     } catch {
       // Update already succeeded, activity logging is best-effort.

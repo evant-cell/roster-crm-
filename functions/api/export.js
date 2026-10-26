@@ -20,13 +20,29 @@ export async function onRequestGet({ env }) {
     return error(e.message, 502);
   }
 
-  const rows = leads.map((lead) => HEADERS.map((h) => {
-    const v = lead[h];
-    if (Array.isArray(v)) return v.join(', ');
-    return v == null ? '' : v;
-  }));
+  // Custom fields from Settings become extra columns, labelled by their name.
+  let customFields = [];
+  try {
+    const rows = await query(env, 'settings', { select: 'value', filters: ['key=eq.custom_fields'], limit: 1 });
+    if (rows && rows[0] && Array.isArray(rows[0].value)) customFields = rows[0].value;
+  } catch {
+    // Export the default columns if settings can't be read.
+  }
 
-  const csv = toCsv(HEADERS, rows);
+  const rows = leads.map((lead) => {
+    const base = HEADERS.map((h) => {
+      const v = lead[h];
+      if (Array.isArray(v)) return v.join(', ');
+      return v == null ? '' : v;
+    });
+    const custom = customFields.map((f) => {
+      const v = (lead.custom || {})[f.key];
+      return v == null ? '' : v;
+    });
+    return base.concat(custom);
+  });
+
+  const csv = toCsv(HEADERS.concat(customFields.map((f) => f.label)), rows);
   const filename = `roster-leads-${todayChicago()}.csv`;
 
   return new Response(csv, {

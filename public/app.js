@@ -1,7 +1,7 @@
 // Boot: check auth, wire global chrome (nav, search, theme, drawer scrim,
 // keyboard shortcuts), and dispatch rendering to the active view module.
 
-import { $, $$, toast, initials } from './modules/ui.js';
+import { $, $$, toast, initials, applyStageLabels } from './modules/ui.js';
 import { state } from './modules/state.js';
 import * as api from './modules/api.js';
 import { renderLeads } from './modules/leads.js';
@@ -120,6 +120,7 @@ async function boot() {
 
   try {
     state.settings = await api.getSettings();
+    applyStageLabels(state.settings);
   } catch (e) {
     // settings.js will retry and fall back to defaults
   }

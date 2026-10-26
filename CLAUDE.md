@@ -4,7 +4,7 @@ Project rules for Roster. Voice rules and self-check protocol from `~/.claude/CL
 
 ## What this is
 
-Single-user CRM for Evan to track leads through a simple pipeline (new, contacted, qualified, contracted, lost), log activity, snooze follow-ups, import/export CSV, and send email straight from a lead via Gmail. Deployed on Cloudflare Pages.
+CRM for Evan and Tiana to track leads through a simple pipeline (new, contacted, qualified, contracted, lost), log activity, snooze follow-ups, import/export CSV, and send email straight from a lead via Gmail. Deployed on Cloudflare Pages. Stage names, Source options, and custom fields are editable in Settings. `README.md` has the full handoff (how settings are stored, limits, how to test and ship), read it first.
 
 ## Stack
 
@@ -72,7 +72,7 @@ Cloudflare Pages auto-deploys from the connected GitHub repo.
 3. `functions/api/leads/` lead list/create, single-lead get/patch/delete, activities, snooze.
 4. `functions/api/import/` CSV preview and commit.
 5. `functions/api/export.js` CSV export of active leads.
-6. `functions/api/settings.js` app settings (checklist, stale_days, digest config).
+6. `functions/api/settings.js` app settings (stage_labels, checklist, source_options, custom_fields, stale_days, digest config).
 7. `functions/api/email/send.js` sends email via Gmail API on behalf of the signed-in user.
 8. `functions/api/digest.js` overdue/due-today lead lists.
 9. `functions/lib/` shared backend utilities (db client, CSV parser, dates, Google client, session signing, HTTP helpers, import field guessing).

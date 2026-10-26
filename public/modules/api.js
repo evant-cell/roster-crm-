@@ -184,6 +184,7 @@ const demo = (() => {
     checklist: ['Has budget', 'Decision maker reached', 'Timeline inside 90 days', 'Fits service area'],
     stale_days: 14,
     digest: { enabled: true, hour: 8 },
+    custom_fields: [],
   };
 
   function mk(id, name, company, email, phone, stage, lastN, nextN, source, value, tags, qual, notes, log) {

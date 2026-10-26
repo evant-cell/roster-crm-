@@ -267,3 +267,8 @@ kbd{font-family:var(--mono);font-size:11px;border:1px solid var(--line);border-r
 .google-btn:hover{background:var(--surface-2)}
 .google-btn svg{width:18px;height:18px}
 .hidden{display:none !important}
+.list div.edit-row{padding:6px 8px 6px 12px;flex-wrap:wrap}
+.edit-row input,.edit-row select{border:1px solid var(--line);border-radius:6px;padding:5px 8px;background:var(--surface)}
+.edit-row input{flex:1;min-width:0}
+.edit-row .opts{flex-basis:100%}
+.edit-row .r{flex-shrink:0;min-width:104px;text-align:right}

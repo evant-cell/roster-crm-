@@ -1,12 +1,11 @@
 // Lead detail drawer: fields, stage control, qualifying checklist, activity
 // timeline, note compose, email compose, and quick actions.
 
-import { $, $$, esc, fmt, initials, toast, STAGES, STAGE_LABEL } from './ui.js';
+import { $, $$, esc, fmt, initials, toast, STAGES, STAGE_LABEL, sourceOptions, customFields } from './ui.js';
 import { state } from './state.js';
 import * as api from './api.js';
 import { refreshCurrentView } from '../app.js';
 
-const SOURCES = ['Referral', 'Website form', 'LinkedIn', 'Instagram', 'Networking event', 'Cold outreach', 'Manual', 'Import'];
 const DEFAULT_CHECKLIST = ['Has budget', 'Decision maker reached', 'Timeline inside 90 days', 'Fits service area'];
 
 let current = null; // { lead, activities }
@@ -16,6 +15,31 @@ let emailOpen = false;
 
 function checklist() {
   return (state.settings && state.settings.checklist && state.settings.checklist.length === 4) ? state.settings.checklist : DEFAULT_CHECKLIST;
+}
+
+// Keeps a lead's saved source selectable even after it is removed from the
+// options list in Settings, so opening the drawer never silently changes it.
+function sources(l) {
+  const list = sourceOptions(state.settings).slice();
+  if (l.source && !list.includes(l.source)) list.unshift(l.source);
+  return list;
+}
+
+function customInput(f, value) {
+  const v = value == null ? '' : value;
+  const label = `<label>${esc(f.label)}</label>`;
+  if (f.type === 'dropdown') {
+    const opts = (f.options || []).slice();
+    if (v && !opts.includes(v)) opts.unshift(v);
+    return `<div class="field">${label}<select data-c="${esc(f.key)}"><option value=""></option>${opts.map((o) => `<option ${v === o ? 'selected' : ''}>${esc(o)}</option>`).join('')}</select></div>`;
+  }
+  if (f.type === 'number' || f.type === 'currency') {
+    return `<div class="field">${label}<input type="number" value="${esc(v)}" data-c="${esc(f.key)}" data-num="1" class="mono"></div>`;
+  }
+  if (f.type === 'date') {
+    return `<div class="field">${label}<input type="date" value="${esc(v)}" data-c="${esc(f.key)}"></div>`;
+  }
+  return `<div class="field">${label}<input value="${esc(v)}" data-c="${esc(f.key)}"></div>`;
 }
 
 export async function openLead(id, opts = {}) {
@@ -79,8 +103,9 @@ function paint() {
         <div class="field"><label>Phone</label><input value="${esc(l.phone)}" data-k="phone" class="mono"></div>
         <div class="field"><label>Last contacted</label><input type="date" value="${l.last_contacted || ''}" data-k="last_contacted"></div>
         <div class="field"><label>Next follow-up</label><input type="date" value="${l.next_followup || ''}" data-k="next_followup"></div>
-        <div class="field"><label>Source</label><select data-k="source">${SOURCES.map((s) => `<option ${l.source === s ? 'selected' : ''}>${s}</option>`).join('')}</select></div>
+        <div class="field"><label>Source</label><select data-k="source">${sources(l).map((s) => `<option ${l.source === s ? 'selected' : ''}>${esc(s)}</option>`).join('')}</select></div>
         <div class="field"><label>Est. value</label><input type="number" value="${l.est_value || 0}" data-k="est_value" class="mono"></div>
+        ${customFields(state.settings).map((f) => customInput(f, (l.custom || {})[f.key])).join('')}
         <div class="field wide"><label>Tags</label><input value="${esc((l.tags || []).join(', '))}" data-k="tags" placeholder="comma separated"></div>
         <div class="field wide"><label>Notes</label><textarea data-k="notes" placeholder="Anything worth remembering">${esc(l.notes)}</textarea></div>
       </div>
@@ -137,6 +162,16 @@ function wire(l) {
     pendingPatch[k] = v;
     if (k === 'name') $('.d-h h2', dr).textContent = v || 'Unnamed';
     if (k === 'company') $('.d-h .co', dr).innerHTML = `${v ? esc(v) : 'No company yet'} &middot; ${esc(l.source || '')}`;
+    clearTimeout(fieldTimer);
+    fieldTimer = setTimeout(flushFields, 400);
+  }));
+
+  $$('[data-c]', dr).forEach((input) => input.addEventListener('input', () => {
+    // custom is one jsonb column, so every edit sends the whole object.
+    const custom = { ...(current.lead.custom || {}), ...(pendingPatch.custom || {}) };
+    const raw = input.value;
+    custom[input.dataset.c] = input.dataset.num ? (raw === '' ? null : +raw) : raw;
+    pendingPatch.custom = custom;
     clearTimeout(fieldTimer);
     fieldTimer = setTimeout(flushFields, 400);
   }));

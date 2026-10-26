@@ -1,6 +1,6 @@
 // CSV import wizard: upload -> match columns -> review and commit.
 
-import { $, $$, esc, toast } from './ui.js';
+import { $, $$, esc, toast, STAGES, STAGE_LABEL } from './ui.js';
 import { state } from './state.js';
 import * as api from './api.js';
 import { setView } from '../app.js';
@@ -80,7 +80,7 @@ async function paintStep2(p) {
   p.innerHTML = `<div style="display:flex;align-items:baseline;gap:10px;margin-bottom:12px"><b>${esc(state.importFile.name)}</b><span class="hint">${preview.headers.length} columns &middot; ${preview.rowCount} rows &middot; we guessed the matches, fix any that are wrong</span></div>
     <div class="maphead"><span>Column in your file</span><span></span><span>Goes into</span><span>First row</span></div>
     ${preview.headers.map((h, i) => `<div class="maprow"><span class="src">${esc(h)}</span><span class="arr">&rarr;</span><select data-h="${esc(h)}">${FIELD_TARGETS.map(([v, l]) => `<option value="${v}" ${mapping[h] === v ? 'selected' : ''}>${l}</option>`).join('')}</select><span class="sample">${esc((preview.sample[0] || [])[i] ?? '')}</span></div>`).join('')}
-    <div class="pfoot"><button class="btn ghost" id="back1">Back</button><span class="spacer"></span><span class="hint">"Stage" values will be matched to your stages (Contacted, Qualified, Lost, Contracted).</span><button class="btn primary" id="to3">Review</button></div>`;
+    <div class="pfoot"><button class="btn ghost" id="back1">Back</button><span class="spacer"></span><span class="hint">"Stage" values will be matched to your stages (${STAGES.map((st) => esc(STAGE_LABEL[st])).join(', ')}).</span><button class="btn primary" id="to3">Review</button></div>`;
 
   $$('#import-panel select[data-h]').forEach((sel) => sel.addEventListener('change', () => { mapping[sel.dataset.h] = sel.value; }));
   $('#back1').addEventListener('click', () => goStep(1));

@@ -1,7 +1,27 @@
 // Small DOM and formatting helpers shared across views.
 
 export const STAGES = ['new', 'contacted', 'qualified', 'contracted', 'lost'];
-export const STAGE_LABEL = { new: 'New', contacted: 'Contacted', qualified: 'Qualified', contracted: 'Contracted', lost: 'Lost' };
+export const DEFAULT_STAGE_LABEL = { new: 'New', contacted: 'Contacted', qualified: 'Qualified', contracted: 'Contracted', lost: 'Lost' };
+// Mutable on purpose. applyStageLabels overwrites it from settings so every
+// view picks up renamed stages without passing settings around.
+export const STAGE_LABEL = { ...DEFAULT_STAGE_LABEL };
+
+export function applyStageLabels(settings) {
+  const custom = (settings && settings.stage_labels) || {};
+  STAGES.forEach((s) => { STAGE_LABEL[s] = (custom[s] && String(custom[s]).trim()) || DEFAULT_STAGE_LABEL[s]; });
+}
+
+export const DEFAULT_SOURCES = ['Referral', 'Website form', 'LinkedIn', 'Instagram', 'Networking event', 'Cold outreach', 'Manual', 'Import'];
+export const FIELD_TYPES = ['text', 'number', 'currency', 'date', 'dropdown'];
+
+export function sourceOptions(settings) {
+  const list = settings && Array.isArray(settings.source_options) ? settings.source_options.filter(Boolean) : [];
+  return list.length ? list : DEFAULT_SOURCES;
+}
+
+export function customFields(settings) {
+  return settings && Array.isArray(settings.custom_fields) ? settings.custom_fields : [];
+}
 
 export const $ = (s, el = document) => el.querySelector(s);
 export const $$ = (s, el = document) => [...el.querySelectorAll(s)];
