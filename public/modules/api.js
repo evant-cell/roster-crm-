@@ -185,13 +185,20 @@ const demo = (() => {
     stale_days: 14,
     digest: { enabled: true, hour: 8 },
     custom_fields: [
-      { key: 'f_demo_type', label: 'Type', type: 'dropdown', options: ['Potential Client', 'Advocate'], in_list: true },
+      { key: 'f_demo_type', label: 'Type', type: 'dropdown', options: ['Potential Client', 'Advocate'], in_list: true, list_pos: 'start' },
+      { key: 'f_demo_role', label: 'Role', type: 'text', options: [], in_list: true, list_pos: 'end' },
     ],
   };
 
   // Sample values for the demo Type field.
   const demoTypes = { 1: 'Potential Client', 2: 'Advocate', 3: 'Potential Client', 5: 'Advocate', 7: 'Potential Client', 8: 'Potential Client', 9: 'Advocate', 11: 'Potential Client', 13: 'Advocate' };
-  leads.forEach((l) => { if (demoTypes[l.id]) l.custom = { f_demo_type: demoTypes[l.id] }; });
+  const demoRoles = { 1: 'Owner', 2: 'Office Manager', 3: 'Managing Partner', 5: 'Founder', 8: 'Clinic Director', 9: 'Owner', 11: 'Broker', 13: 'Principal' };
+  leads.forEach((l) => {
+    const custom = {};
+    if (demoTypes[l.id]) custom.f_demo_type = demoTypes[l.id];
+    if (demoRoles[l.id]) custom.f_demo_role = demoRoles[l.id];
+    l.custom = custom;
+  });
 
   function mk(id, name, company, email, phone, stage, lastN, nextN, source, value, tags, qual, notes, log) {
     return {

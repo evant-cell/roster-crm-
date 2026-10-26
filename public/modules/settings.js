@@ -29,7 +29,7 @@ export async function renderSettings() {
 }
 
 function cloneFields(fields) {
-  return fields.map((f) => ({ key: f.key, label: f.label || '', type: f.type || 'text', options: Array.isArray(f.options) ? f.options.slice() : [], in_list: !!f.in_list }));
+  return fields.map((f) => ({ key: f.key, label: f.label || '', type: f.type || 'text', options: Array.isArray(f.options) ? f.options.slice() : [], in_list: !!f.in_list, list_pos: f.list_pos === 'end' ? 'end' : 'start' }));
 }
 
 function splitList(text) {
@@ -52,7 +52,8 @@ function fieldRow(f) {
     ${typeSelect}
     <button class="btn sm ghost danger" data-remove="${esc(f.key)}" aria-label="Remove field">Remove</button>
     ${options}
-    <label class="check in-list"><input type="checkbox" data-p="in_list" ${f.in_list ? 'checked' : ''}> Show as a column on the Leads list</label>
+    <label class="check in-list"><input type="checkbox" data-p="in_list" ${f.in_list ? 'checked' : ''}> Show as a column on the Leads list
+      <select data-p="list_pos" aria-label="Column position"><option value="start" ${f.list_pos !== 'end' ? 'selected' : ''}>at the start, before Name</option><option value="end" ${f.list_pos === 'end' ? 'selected' : ''}>at the end, before Notes</option></select></label>
   </div>`;
 }
 
@@ -67,6 +68,7 @@ function readFieldRows() {
       type: $('select[data-p="type"]', row).value,
       options: opts ? splitList(opts.value) : (fieldDraft.find((f) => f.key === row.dataset.key) || { options: [] }).options,
       in_list: $('input[data-p="in_list"]', row).checked,
+      list_pos: $('select[data-p="list_pos"]', row).value,
     };
   });
 }
@@ -132,7 +134,7 @@ function paint() {
 
   $('#add-field').addEventListener('click', () => {
     readFieldRows();
-    fieldDraft.push({ key: newFieldKey(), label: '', type: 'text', options: [], in_list: false });
+    fieldDraft.push({ key: newFieldKey(), label: '', type: 'text', options: [], in_list: false, list_pos: 'start' });
     paint();
     const inputs = $$('#field-rows input[data-p="label"]');
     if (inputs.length) inputs[inputs.length - 1].focus();
