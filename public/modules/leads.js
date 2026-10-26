@@ -4,7 +4,6 @@ import { $, $$, esc, money, fmt, rel, dueClass, dueText, isOpen, toast, STAGE_LA
 import { state } from './state.js';
 import * as api from './api.js';
 import { openLead } from './drawer.js';
-import { applyFieldFilters, paintFieldFilters } from './field-filter.js';
 
 function queryParams() {
   const params = { q: state.query || undefined, sort: state.sortKey, dir: state.sortDir > 0 ? 'asc' : 'desc' };
@@ -80,8 +79,7 @@ export async function renderLeads() {
   $('#chips').innerHTML = chips.map(([k, l, n]) => `<button class="chip ${state.filter === k ? 'on' : ''}" data-f="${k}">${l}<span class="n">${n}</span></button>`).join('');
   $$('#chips .chip').forEach((chip) => chip.addEventListener('click', () => { state.filter = chip.dataset.f; renderLeads(); }));
 
-  const shown = applyFieldFilters(state.leads, state.leadFieldFilter, state.settings);
-  paintFieldFilters($('#lead-cf'), state.leads, state.leadFieldFilter, state.settings, renderLeads);
+  const shown = state.leads;
   $('#rowcount').textContent = `${shown.length} of ${c.all || 0}`;
   const startFields = listFields('start');
   const endFields = listFields('end');

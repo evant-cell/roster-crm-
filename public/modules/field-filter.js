@@ -1,5 +1,5 @@
-// Filter buttons for dropdown columns (for example Type) on the Leads and
-// Contacts lists. Filtering happens on the rows already loaded, so the
+// Filter buttons for dropdown columns (for example Type) on the Contacts
+// list. Filtering happens on the rows already loaded, so the
 // counts on each button always match what the list would show.
 
 import { $$, esc, customFields } from './ui.js';

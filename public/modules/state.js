@@ -8,9 +8,8 @@ export const state = {
   sortDir: 1,
   contactSortKey: 'name',
   contactSortDir: 1,
-  // Dropdown column filters, keyed by custom field key. Missing or null
+  // Contacts dropdown column filters, keyed by custom field key. Missing or null
   // means show all, '' means only blank, anything else is that option.
-  leadFieldFilter: {},
   contactFieldFilter: {},
   selected: null,
   leads: [],
