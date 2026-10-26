@@ -185,13 +185,13 @@ const demo = (() => {
     stale_days: 14,
     digest: { enabled: true, hour: 8 },
     custom_fields: [
-      { key: 'f_demo_type', label: 'Type', type: 'dropdown', options: ['Potential Client', 'Advocate'], in_list: true, list_pos: 'start' },
+      { key: 'f_demo_type', label: 'TYPE', type: 'dropdown', options: ['ADVOCATE', 'CLIENT', 'COMPETITOR', 'POTENTIAL'], in_list: true, list_pos: 'start' },
       { key: 'f_demo_role', label: 'Role', type: 'text', options: [], in_list: true, list_pos: 'end' },
     ],
   };
 
   // Sample values for the demo Type field.
-  const demoTypes = { 1: 'Potential Client', 2: 'Advocate', 3: 'Potential Client', 5: 'Advocate', 7: 'Potential Client', 8: 'Potential Client', 9: 'Advocate', 11: 'Potential Client', 13: 'Advocate', 4: 'Advocate', 15: 'Potential Client', 16: 'Advocate', 18: 'Potential Client' };
+  const demoTypes = { 1: 'CLIENT', 2: 'ADVOCATE', 3: 'CLIENT', 5: 'ADVOCATE', 7: 'POTENTIAL', 8: 'CLIENT', 9: 'ADVOCATE', 11: 'CLIENT', 13: 'COMPETITOR', 4: 'ADVOCATE', 15: 'POTENTIAL', 16: 'ADVOCATE', 18: 'CLIENT' };
   // A few sample people start out in Contacts, plus some LinkedIn-style ones.
   [4, 10, 14].forEach((id) => { const l = leads.find((x) => x.id === id); if (l) l.is_contact = true; });
   [

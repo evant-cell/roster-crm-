@@ -6,6 +6,7 @@ import { state } from './state.js';
 import * as api from './api.js';
 import { openLead } from './drawer.js';
 import { listFields, customCell } from './leads.js';
+import { applyFieldFilters, paintFieldFilters } from './field-filter.js';
 
 function headerCell(f) {
   const th = document.createElement('th');
@@ -41,7 +42,9 @@ export async function renderContacts() {
     toast(e.message);
     data = { leads: [], totals: null };
   }
-  const contacts = data.leads;
+  const loaded = data.leads;
+  const contacts = applyFieldFilters(loaded, state.contactFieldFilter, state.settings);
+  paintFieldFilters($('#contact-cf'), loaded, state.contactFieldFilter, state.settings, renderContacts);
   updateNavCounts(null, data.totals);
 
   const startFields = listFields('start');
@@ -59,7 +62,7 @@ export async function renderContacts() {
   });
 
   const total = data.totals ? data.totals.contacts : contacts.length;
-  $('#contact-count').textContent = state.query ? `${contacts.length} of ${total}` : `${total} contact${total === 1 ? '' : 's'}`;
+  $('#contact-count').textContent = contacts.length === total ? `${total} contact${total === 1 ? '' : 's'}` : `${contacts.length} of ${total}`;
 
   const cols = 6 + startFields.length + endFields.length;
   $('#contact-rows').innerHTML = contacts.length
@@ -73,7 +76,7 @@ export async function renderContacts() {
         <td class="notes" title="${esc(c.notes)}"><div>${esc(c.notes).replace(/\n+/g, ' &middot; ')}</div></td>
         <td class="act"><button class="btn sm" data-make="${c.id}">Make lead</button></td>
       </tr>`).join('')
-    : `<tr><td colspan="${cols}" class="empty">${state.query ? 'No contacts match that search.' : 'No contacts yet. Import a list or add one with + New contact.'}</td></tr>`;
+    : `<tr><td colspan="${cols}" class="empty">${loaded.length ? 'No contacts match. Try All or clear the search.' : 'No contacts yet. Import a list or add one with + New contact.'}</td></tr>`;
 
   $$('#contact-rows tr[data-id]').forEach((row) => row.addEventListener('click', () => openLead(row.dataset.id)));
   $$('#contact-rows [data-make]').forEach((b) => b.addEventListener('click', async (e) => {
