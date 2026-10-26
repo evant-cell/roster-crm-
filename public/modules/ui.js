@@ -89,11 +89,14 @@ export function isOpen(lead) {
   return lead.stage !== 'lost' && lead.stage !== 'contracted';
 }
 
-export function updateNavCounts(counts) {
+export function updateNavCounts(counts, totals) {
   const leadsEl = $('#n-leads');
   const followEl = $('#n-follow');
-  if (leadsEl) leadsEl.textContent = counts.all ?? 0;
-  if (followEl) followEl.textContent = (counts.overdue || 0) + (counts.today || 0);
+  const contactsEl = $('#n-contacts');
+  if (counts && leadsEl) leadsEl.textContent = counts.all ?? 0;
+  if (counts && followEl) followEl.textContent = (counts.overdue || 0) + (counts.today || 0);
+  if (totals && contactsEl) contactsEl.textContent = totals.contacts ?? 0;
+  if (totals && leadsEl) leadsEl.textContent = totals.leads ?? 0;
 }
 
 let toastTimer = null;

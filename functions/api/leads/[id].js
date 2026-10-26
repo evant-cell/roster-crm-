@@ -12,7 +12,7 @@ const STAGE_LABELS = {
 
 const PATCHABLE_FIELDS = [
   'name', 'company', 'email', 'phone', 'stage', 'last_contacted', 'next_followup',
-  'source', 'est_value', 'tags', 'notes', 'qual', 'custom',
+  'source', 'est_value', 'tags', 'notes', 'qual', 'custom', 'is_contact',
 ];
 
 export async function onRequestGet({ params, env }) {
@@ -53,10 +53,11 @@ export async function onRequestPatch({ request, params, env }) {
   }
   if (Object.keys(patch).length === 0) return error('No updatable fields provided.');
   if (patch.stage && !STAGES.includes(patch.stage)) return error('Invalid stage.');
+  if (patch.is_contact !== undefined) patch.is_contact = Boolean(patch.is_contact);
 
   let existingRows;
   try {
-    existingRows = await query(env, 'leads', { select: 'id,stage', filters: [`id=eq.${id}`], limit: 1 });
+    existingRows = await query(env, 'leads', { select: 'id,stage,is_contact', filters: [`id=eq.${id}`], limit: 1 });
   } catch (e) {
     return error(e.message, 502);
   }
@@ -64,6 +65,7 @@ export async function onRequestPatch({ request, params, env }) {
   if (!existing) return error('Lead not found.', 404);
 
   const stageChanged = patch.stage && patch.stage !== existing.stage;
+  const kindChanged = patch.is_contact !== undefined && patch.is_contact !== Boolean(existing.is_contact);
   if (stageChanged && (patch.stage === 'contracted' || patch.stage === 'lost')) {
     patch.next_followup = null;
   }
@@ -76,7 +78,19 @@ export async function onRequestPatch({ request, params, env }) {
     return error(e.message, 502);
   }
 
-  if (stageChanged) {
+  if (kindChanged) {
+    try {
+      await insert(env, 'activities', [{
+        lead_id: id,
+        type: 'stage',
+        body: patch.is_contact ? 'Moved to Contacts' : 'Made a lead',
+      }], { returning: false });
+    } catch {
+      // Update already succeeded, activity logging is best-effort.
+    }
+  }
+
+  if (stageChanged && !kindChanged) {
     try {
       // Stage names can be renamed in Settings (settings.stage_labels).
       let label = STAGE_LABELS[patch.stage] || patch.stage;

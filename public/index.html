@@ -24,6 +24,7 @@
   <aside class="side">
     <div class="brand"><div class="brand-mark">R</div><div class="brand-name">Roster</div><div class="brand-sub">v0.1</div></div>
     <nav class="nav" id="nav">
+      <button data-view="contacts"><svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c.8-3.6 3.3-5.5 6.5-5.5s5.7 1.9 6.5 5.5"/><path d="M16 4.5a3.5 3.5 0 0 1 0 7M18.5 14.8c1.7.8 2.7 2.5 3 5.2"/></svg>Contacts<span class="count" id="n-contacts">0</span></button>
       <button data-view="leads" class="active"><svg viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h10"/></svg>Leads<span class="count" id="n-leads">0</span></button>
       <button data-view="board"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="5" height="16" rx="1"/><rect x="10" y="4" width="5" height="10" rx="1"/><rect x="17" y="4" width="4" height="13" rx="1"/></svg>Board</button>
       <button data-view="follow"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>Follow-ups<span class="count" id="n-follow">0</span></button>
@@ -45,6 +46,27 @@
     </header>
 
     <div class="content">
+      <!-- CONTACTS -->
+      <section class="view" data-view="contacts">
+        <div class="toolbar">
+          <div class="hint">Everyone you know. Click Make lead to move someone into the pipeline.</div>
+          <div class="right"><span id="contact-count"></span></div>
+        </div>
+        <div class="tablewrap">
+          <table>
+            <thead><tr id="contacts-head">
+              <th>Name</th>
+              <th>Company</th>
+              <th>Contact</th>
+              <th>Tags</th>
+              <th>Notes</th>
+              <th></th>
+            </tr></thead>
+            <tbody id="contact-rows"></tbody>
+          </table>
+        </div>
+      </section>
+
       <!-- LEADS -->
       <section class="view active" data-view="leads">
         <div class="stats" id="stats"></div>

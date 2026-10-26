@@ -5,16 +5,17 @@ import { $, $$, toast, initials, applyStageLabels } from './modules/ui.js';
 import { state } from './modules/state.js';
 import * as api from './modules/api.js';
 import { renderLeads } from './modules/leads.js';
+import { renderContacts } from './modules/contacts.js';
 import { renderBoard } from './modules/board.js';
 import { renderFollow } from './modules/followups.js';
 import { renderImport } from './modules/import.js';
 import { renderSettings } from './modules/settings.js';
 import { openLead, closeDrawer } from './modules/drawer.js';
 
-const TITLES = { leads: 'Leads', board: 'Board', follow: 'Follow-ups', import: 'Import leads', settings: 'Settings' };
-const DEFAULT_SUBS = { leads: '', board: 'Click a card to open it', follow: 'Overdue first, then today, then this week', import: 'CSV export from any spreadsheet', settings: '' };
+const TITLES = { contacts: 'Contacts', leads: 'Leads', board: 'Board', follow: 'Follow-ups', import: 'Import leads', settings: 'Settings' };
+const DEFAULT_SUBS = { contacts: '', leads: '', board: 'Click a card to open it', follow: 'Overdue first, then today, then this week', import: 'CSV export from any spreadsheet', settings: '' };
 
-const RENDERERS = { leads: renderLeads, board: renderBoard, follow: renderFollow, import: renderImport, settings: renderSettings };
+const RENDERERS = { contacts: renderContacts, leads: renderLeads, board: renderBoard, follow: renderFollow, import: renderImport, settings: renderSettings };
 
 export function setView(v) {
   state.view = v;
@@ -22,6 +23,7 @@ export function setView(v) {
   $$('.view').forEach((s) => s.classList.toggle('active', s.dataset.view === v));
   $('#title').textContent = TITLES[v];
   $('#subtitle').textContent = DEFAULT_SUBS[v] || '';
+  $('#new-lead').textContent = v === 'contacts' ? '+ New contact' : '+ New lead';
   renderCurrent();
 }
 
@@ -64,13 +66,14 @@ function initChrome() {
     state.query = e.target.value;
     clearTimeout(searchTimer);
     searchTimer = setTimeout(() => {
-      if (state.view === 'leads' || state.view === 'board') renderCurrent();
+      if (state.view === 'leads' || state.view === 'board' || state.view === 'contacts') renderCurrent();
     }, 250);
   });
 
   $('#new-lead').addEventListener('click', async () => {
     try {
-      const lead = await api.createLead({ name: 'New lead', stage: 'new' });
+      const asContact = state.view === 'contacts';
+      const lead = await api.createLead({ name: asContact ? 'New contact' : 'New lead', stage: 'new', is_contact: asContact });
       renderCurrent();
       await openLead(lead.id, { focusName: true });
     } catch (e) {

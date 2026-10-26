@@ -50,6 +50,9 @@ export async function onRequestPost({ request, env }) {
     ? null
     : Number(options.defaultFollowupDays);
   const extraTag = options.tag ? String(options.tag).trim() : null;
+  // New people land in Contacts unless the import explicitly says leads.
+  // Existing records matched by email keep whichever tab they are on.
+  const asContacts = options.asContacts !== false;
   const today = todayChicago();
 
   let stageLabels = {};
@@ -109,6 +112,7 @@ export async function onRequestPost({ request, env }) {
       est_value: parseValue(fields.est_value),
       tags,
       notes: fields.notes || '',
+      is_contact: asContacts,
     };
   }
 

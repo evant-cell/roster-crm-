@@ -82,7 +82,9 @@ function paint() {
       <div><h2>${esc(l.name)}</h2><div class="co">${l.company ? esc(l.company) : 'No company yet'} &middot; ${esc(l.source || '')}</div></div>
       <button class="x" id="d-close" aria-label="Close">&#x2715;</button></div>
     <div class="d-b">
-      <div class="seg" id="seg">${STAGES.map((s) => `<button class="${s} ${l.stage === s ? 'on' : ''}" data-s="${s}">${STAGE_LABEL[s]}</button>`).join('')}</div>
+      ${l.is_contact
+        ? `<div class="contact-bar"><span>In Contacts. Not in the pipeline yet.</span><button class="btn sm primary" id="d-make-lead">Make lead</button></div>`
+        : `<div class="seg" id="seg">${STAGES.map((s) => `<button class="${s} ${l.stage === s ? 'on' : ''}" data-s="${s}">${STAGE_LABEL[s]}</button>`).join('')}</div>`}
       <div class="quick">
         <button class="btn sm" data-q="call">Log call</button>
         <button class="btn sm" data-q="email">Send email</button>
@@ -117,15 +119,34 @@ function paint() {
         <div class="timeline">${activities.map((e) => `<div class="ev ${e.type}"><div class="dot"><i></i></div><div class="body"><div class="when">${fmt(e.occurred_at)} &middot; ${esc(e.type)}</div><div class="txt">${esc(e.body)}</div></div></div>`).join('') || '<div class="hint">No activity yet.</div>'}</div>
       </div>
     </div>
-    <div class="d-f"><span class="hint">Changes save as you type</span><span class="spacer"></span><button class="btn sm ghost danger" id="d-del">Archive</button><button class="btn sm" id="d-done">Done</button></div>`;
+    <div class="d-f"><span class="hint">Changes save as you type</span><span class="spacer"></span>${l.is_contact ? '' : '<button class="btn sm ghost" id="d-to-contacts">Move to Contacts</button>'}<button class="btn sm ghost danger" id="d-del">Archive</button><button class="btn sm" id="d-done">Done</button></div>`;
 
   wire(l);
+}
+
+// Moves a record between Contacts and Leads. Make lead also resets it to
+// the first stage so it starts at the beginning of the pipeline.
+async function switchList(l, toContacts) {
+  const patch = toContacts ? { is_contact: true } : { is_contact: false, stage: 'new' };
+  try {
+    current.lead = await api.updateLead(l.id, patch);
+    toast(toContacts ? `${l.name || 'Lead'} moved to Contacts` : `${l.name || 'Contact'} is now a lead`);
+    closeDrawer();
+    refreshCurrentView();
+  } catch (e) {
+    toast(e.message);
+  }
 }
 
 function wire(l) {
   const dr = $('#drawer');
   $('#d-close', dr).onclick = closeDrawer;
   $('#d-done', dr).onclick = closeDrawer;
+
+  const makeBtn = $('#d-make-lead', dr);
+  if (makeBtn) makeBtn.onclick = () => switchList(l, false);
+  const toContactsBtn = $('#d-to-contacts', dr);
+  if (toContactsBtn) toContactsBtn.onclick = () => switchList(l, true);
 
   $('#d-del', dr).onclick = async () => {
     if (!confirm(`Archive ${l.name}?`)) return;

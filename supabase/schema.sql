@@ -17,6 +17,8 @@ create table if not exists leads (
   notes text default '',
   qual boolean[] default '{false,false,false,false}',
   custom jsonb default '{}',
+  -- true while the person sits in Contacts. Make lead sets it to false.
+  is_contact boolean not null default false,
   archived_at timestamptz,
   created_at timestamptz default now(),
   updated_at timestamptz default now()
@@ -42,6 +44,10 @@ create unique index if not exists leads_email_unique
 
 create index if not exists leads_stage_idx on leads (stage);
 create index if not exists leads_next_followup_idx on leads (next_followup);
+
+-- Contacts (added Oct 2026). For an existing database, run:
+--   alter table leads add column if not exists is_contact boolean not null default false;
+--   update leads set is_contact = true where archived_at is null;
 
 create or replace function set_updated_at()
 returns trigger as $$

@@ -13,7 +13,8 @@ This section is the handoff for a fresh Claude session. Read it, then `CLAUDE.md
 3. Follow-ups view, overdue first, then today, then the next 7 days.
 4. Lead drawer with editable fields, stage switcher, a 4-box qualifying checklist, an activity timeline, notes, and Gmail send.
 5. CSV import (upload, match columns, review, commit) and CSV export.
-6. Settings view where the user edits stage names, the checklist, Source options, custom fields, the stale threshold, and the daily digest toggle.
+6. Contacts view for everyone not in the pipeline yet. Each contact has a Make lead button that moves them into Leads at the first stage, and a lead can be moved back from its drawer. Stored as `leads.is_contact`. Contacts are left out of the Leads list, Board, Follow-ups, counts, and digest. CSV import adds new people to Contacts by default.
+7. Settings view where the user edits stage names, the checklist, Source options, custom fields, the stale threshold, and the daily digest toggle.
 
 ### How it fits together
 

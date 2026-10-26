@@ -15,11 +15,11 @@ function queryParams() {
 // Custom fields marked "Show as a column" in Settings get their own column.
 // list_pos picks where it goes: 'start' (before Name, the default) or 'end'
 // (after Tags, just before Notes).
-function listFields(pos) {
+export function listFields(pos) {
   return customFields(state.settings).filter((f) => f.in_list && (f.list_pos === 'end' ? 'end' : 'start') === pos);
 }
 
-function customCell(f, lead) {
+export function customCell(f, lead) {
   const v = (lead.custom || {})[f.key];
   if (v === null || v === undefined || v === '') return '';
   if (f.type === 'currency') return money(v);
@@ -54,7 +54,7 @@ export async function renderLeads() {
   }
   state.leads = data.leads;
   state.counts = data.counts;
-  updateNavCounts(state.counts);
+  updateNavCounts(state.counts, data.totals);
 
   const c = state.counts;
   const won = state.leads.filter((l) => l.stage === 'contracted');
@@ -97,7 +97,7 @@ export async function renderLeads() {
         <td class="due ${isOpen(l) ? dueClass(l.next_followup) : 'none'}">${isOpen(l) ? dueText(l.next_followup) : 'closed'}</td>
         <td>${(l.tags || []).map((t) => `<span class="tag">${esc(t)}</span>`).join('')}</td>
         ${endFields.map((f) => `<td class="cf">${customCell(f, l)}</td>`).join('')}
-        <td class="notes" title="${esc(l.notes)}"><div>${esc(l.notes)}</div></td>
+        <td class="notes" title="${esc(l.notes)}"><div>${esc(l.notes).replace(/\n+/g, ' &middot; ')}</div></td>
       </tr>`).join('')
     : `<tr><td colspan="${8 + startFields.length + endFields.length}" class="empty">Nothing matches. Clear the filter or search.</td></tr>`;
   $$('#rows tr[data-id]').forEach((row) => row.addEventListener('click', () => openLead(row.dataset.id)));

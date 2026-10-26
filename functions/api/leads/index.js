@@ -7,7 +7,7 @@ const SORT_COLUMNS = new Set(['name', 'company', 'stage', 'last_contacted', 'nex
 
 const INSERTABLE_FIELDS = [
   'name', 'company', 'email', 'phone', 'stage', 'last_contacted', 'next_followup',
-  'source', 'est_value', 'tags', 'notes', 'qual', 'custom',
+  'source', 'est_value', 'tags', 'notes', 'qual', 'custom', 'is_contact',
 ];
 
 function pickInsertable(body) {
@@ -25,6 +25,8 @@ export async function onRequestGet({ request, env }) {
   const filter = url.searchParams.get('filter');
   const sort = url.searchParams.get('sort') || 'created_at';
   const dir = url.searchParams.get('dir') === 'asc' ? 'asc' : 'desc';
+  // kind=contacts lists the Contacts tab. Anything else lists leads.
+  const wantContacts = url.searchParams.get('kind') === 'contacts';
 
   let staleDays = 14;
   try {
@@ -44,6 +46,14 @@ export async function onRequestGet({ request, env }) {
   } catch (e) {
     return error(e.message, 502);
   }
+
+  // Totals for the nav badges, then keep only the side being listed.
+  const totals = { leads: 0, contacts: 0 };
+  for (const lead of leads) {
+    if (lead.is_contact) totals.contacts += 1;
+    else totals.leads += 1;
+  }
+  leads = leads.filter((l) => Boolean(l.is_contact) === wantContacts);
 
   const today = todayChicago();
 
@@ -96,7 +106,7 @@ export async function onRequestGet({ request, env }) {
     return 0;
   });
 
-  return json({ leads: filtered, counts });
+  return json({ leads: filtered, counts, totals });
 }
 
 export async function onRequestPost({ request, env }) {

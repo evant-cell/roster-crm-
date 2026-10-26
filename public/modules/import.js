@@ -91,16 +91,19 @@ function paintStep3(p) {
   const preview = state.importPreview || { rowCount: 0 };
   p.innerHTML = `<div class="hint">Ready to import ${preview.rowCount} row${preview.rowCount === 1 ? '' : 's'} from ${esc(state.importFile.name)}.</div>
     <div style="margin-top:16px;display:flex;flex-direction:column;gap:8px">
-      <label class="check"><input type="checkbox" id="opt-followup" checked> Set "Next follow-up" to 7 days out for anything without a date</label>
-      <label class="check"><input type="checkbox" id="opt-tag" checked> Tag every imported lead <span class="tag" id="opt-tag-label"></span> so you can find them later</label>
+      <label class="check"><input type="checkbox" id="opt-contacts" checked> Add new people to Contacts (untick to add them straight to Leads)</label>
+      <label class="check"><input type="checkbox" id="opt-followup"> Set "Next follow-up" to 7 days out for anything without a date</label>
+      <label class="check"><input type="checkbox" id="opt-tag" checked> Tag everyone imported <span class="tag" id="opt-tag-label"></span> so you can find them later</label>
     </div>
-    <div class="pfoot"><button class="btn ghost" id="back2">Back</button><span class="spacer"></span><button class="btn primary" id="go">Import ${preview.rowCount} lead${preview.rowCount === 1 ? '' : 's'}</button></div>`;
+    <div class="pfoot"><button class="btn ghost" id="back2">Back</button><span class="spacer"></span><button class="btn primary" id="go">Import ${preview.rowCount} row${preview.rowCount === 1 ? '' : 's'}</button></div>`;
 
   const tagValue = `import-${new Date().toISOString().slice(0, 10)}`;
   $('#opt-tag-label').textContent = tagValue;
   $('#back2').addEventListener('click', () => goStep(2));
   $('#go').addEventListener('click', async () => {
     const options = {};
+    options.asContacts = $('#opt-contacts').checked;
+    state.importAsContacts = options.asContacts;
     if ($('#opt-followup').checked) options.defaultFollowupDays = 7;
     if ($('#opt-tag').checked) options.tag = tagValue;
     const goBtn = $('#go');
@@ -118,16 +121,16 @@ function paintStep3(p) {
 
 function paintResult(p, result) {
   p.innerHTML = `<div class="summary">
-      <div><div class="val">${result.inserted}</div><div class="lbl">New leads added</div></div>
+      <div><div class="val">${result.inserted}</div><div class="lbl">New ${state.importAsContacts === false ? 'leads' : 'contacts'} added</div></div>
       <div><div class="val">${result.updated}</div><div class="lbl">Matched existing emails (updated)</div></div>
       <div><div class="val" style="color:var(--gold)">${result.missingEmail}</div><div class="lbl">Rows missing an email (kept, flagged)</div></div>
     </div>
-    <div class="pfoot"><span class="hint">${result.skipped} row${result.skipped === 1 ? '' : 's'} skipped entirely.</span><span class="spacer"></span><button class="btn primary" id="to-leads">View leads</button></div>`;
+    <div class="pfoot"><span class="hint">${result.skipped} row${result.skipped === 1 ? '' : 's'} skipped entirely.</span><span class="spacer"></span><button class="btn primary" id="to-leads">View ${state.importAsContacts === false ? 'leads' : 'contacts'}</button></div>`;
   $('#to-leads').addEventListener('click', () => {
     state.importStep = 1;
     state.importFile = { name: '', csv: '' };
     state.importPreview = null;
     toast('Import complete');
-    setView('leads');
+    setView(state.importAsContacts === false ? 'leads' : 'contacts');
   });
 }

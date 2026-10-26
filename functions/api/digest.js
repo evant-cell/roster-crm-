@@ -15,7 +15,8 @@ export async function onRequestGet({ env }) {
   }
 
   const today = todayChicago();
-  const active = leads.filter((l) => l.stage !== 'contracted' && l.stage !== 'lost');
+  // Contacts are not in the pipeline, so they never show up in the digest.
+  const active = leads.filter((l) => !l.is_contact && l.stage !== 'contracted' && l.stage !== 'lost');
 
   const overdue = active.filter((l) => l.next_followup && l.next_followup < today);
   const dueToday = active.filter((l) => l.next_followup === today);

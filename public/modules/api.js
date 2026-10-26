@@ -192,6 +192,20 @@ const demo = (() => {
 
   // Sample values for the demo Type field.
   const demoTypes = { 1: 'Potential Client', 2: 'Advocate', 3: 'Potential Client', 5: 'Advocate', 7: 'Potential Client', 8: 'Potential Client', 9: 'Advocate', 11: 'Potential Client', 13: 'Advocate' };
+  // A few sample people start out in Contacts, plus some LinkedIn-style ones.
+  [4, 10, 14].forEach((id) => { const l = leads.find((x) => x.id === id); if (l) l.is_contact = true; });
+  [
+    ['Jordan Ellis', 'Hard Rock International', 'Director of Sales', 'Mar 3, 2025'],
+    ['Priya Shah', 'Resorts World Las Vegas', 'Events Manager', 'Jan 18, 2024'],
+    ['Marco Diaz', 'Topgolf', 'Director of Operations', 'Jul 25, 2018'],
+    ['Lena Park', 'ACCESS Destination Services', 'Account Executive', 'Sep 9, 2023'],
+    ['Sam Okafor', 'Netskope', 'Tech Consultant', 'Jul 6, 2026'],
+  ].forEach(([name, company, role, when]) => {
+    const l = mk(nextId++, name, company, '', '', 'new', null, null, 'LinkedIn', 0, ['linkedin'], [0, 0, 0, 0], `Position: ${role}\nConnected on LinkedIn: ${when}`, [['import', 0, 'Imported from CSV']]);
+    l.is_contact = true;
+    leads.push(l);
+  });
+
   const demoRoles = { 1: 'Owner', 2: 'Office Manager', 3: 'Managing Partner', 5: 'Founder', 8: 'Clinic Director', 9: 'Owner', 11: 'Broker', 13: 'Principal' };
   leads.forEach((l) => {
     const custom = {};
@@ -205,7 +219,7 @@ const demo = (() => {
       id, name, company, email, phone, stage,
       last_contacted: lastN === null ? null : isoOffset(lastN),
       next_followup: nextN === null ? null : isoOffset(nextN),
-      source, est_value: value, tags, notes, qual, custom: {},
+      source, est_value: value, tags, notes, qual, custom: {}, is_contact: false,
       created_at: isoOffset(-40),
       activities: log.map(([type, n, body]) => ({ id: activityId(), type, body, occurred_at: isoOffset(n) })),
     };
@@ -222,8 +236,9 @@ const demo = (() => {
   };
 
   function counts() {
-    const c = { all: leads.length, new: 0, contacted: 0, qualified: 0, contracted: 0, lost: 0, overdue: 0, stale: 0, today: 0 };
-    leads.forEach((l) => {
+    const pipeline = leads.filter((l) => !l.is_contact);
+    const c = { all: pipeline.length, new: 0, contacted: 0, qualified: 0, contracted: 0, lost: 0, overdue: 0, stale: 0, today: 0 };
+    pipeline.forEach((l) => {
       c[l.stage] = (c[l.stage] || 0) + 1;
       if (isOpenD(l) && l.next_followup && dayDiff(l.next_followup) < 0) c.overdue++;
       if (isOpenD(l) && l.next_followup && dayDiff(l.next_followup) === 0) c.today++;
@@ -237,8 +252,14 @@ const demo = (() => {
     return { ...rest };
   }
 
+  function totals() {
+    const contacts = leads.filter((l) => l.is_contact).length;
+    return { contacts, leads: leads.length - contacts };
+  }
+
   function getLeads(params = {}) {
-    let arr = leads.slice();
+    const wantContacts = params.kind === 'contacts';
+    let arr = leads.filter((l) => Boolean(l.is_contact) === wantContacts);
     if (params.stage) arr = arr.filter((l) => l.stage === params.stage);
     if (params.filter === 'overdue') arr = arr.filter((l) => isOpenD(l) && l.next_followup && dayDiff(l.next_followup) < 0);
     else if (params.filter === 'today') arr = arr.filter((l) => isOpenD(l) && l.next_followup && dayDiff(l.next_followup) === 0);
@@ -257,11 +278,12 @@ const demo = (() => {
       if (vb == null) return -1;
       return (va < vb ? -1 : va > vb ? 1 : 0) * dir;
     });
-    return { leads: arr.map(strip), counts: counts() };
+    return { leads: arr.map(strip), counts: counts(), totals: totals() };
   }
 
   function createLead(data) {
     const l = mk(nextId++, data.name || 'New lead', data.company || '', data.email || '', data.phone || '', data.stage || 'new', null, 1, data.source || 'Manual', data.est_value || 0, data.tags || [], data.qual || [0, 0, 0, 0], data.notes || '', [['note', 0, 'Lead created']]);
+    l.is_contact = Boolean(data.is_contact);
     leads.unshift(l);
     return Promise.resolve(strip(l));
   }
@@ -279,8 +301,11 @@ const demo = (() => {
   function updateLead(id, patch) {
     const l = find(id);
     if (!l) return Promise.reject(new Error('Lead not found'));
+    const kindChanged = patch.is_contact !== undefined && Boolean(patch.is_contact) !== Boolean(l.is_contact);
     Object.assign(l, patch);
-    if (patch.stage) {
+    if (kindChanged) {
+      l.activities.unshift({ id: activityId(), type: 'stage', body: patch.is_contact ? 'Moved to Contacts' : 'Made a lead', occurred_at: isoOffset(0) });
+    } else if (patch.stage) {
       l.activities.unshift({ id: activityId(), type: 'stage', body: 'Moved to ' + patch.stage[0].toUpperCase() + patch.stage.slice(1), occurred_at: isoOffset(0) });
       if (patch.stage === 'contracted' || patch.stage === 'lost') l.next_followup = null;
     }
@@ -340,7 +365,8 @@ const demo = (() => {
         Object.assign(existing, rec);
         updated++;
       } else {
-        const l = mk(nextId++, rec.name, rec.company || '', rec.email || '', rec.phone || '', rec.stage || 'new', null, options && options.defaultFollowupDays ? Number(options.defaultFollowupDays) : 7, rec.source || 'Import', 0, options && options.tag ? [options.tag] : [], [0, 0, 0, 0], rec.notes || '', [['note', 0, 'Imported']]);
+        const l = mk(nextId++, rec.name, rec.company || '', rec.email || '', rec.phone || '', rec.stage || 'new', null, options && options.defaultFollowupDays ? Number(options.defaultFollowupDays) : null, rec.source || 'Import', 0, options && options.tag ? [options.tag] : [], [0, 0, 0, 0], rec.notes || '', [['note', 0, 'Imported']]);
+        l.is_contact = !(options && options.asContacts === false);
         leads.push(l);
         inserted++;
       }
