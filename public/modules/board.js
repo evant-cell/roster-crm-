@@ -30,12 +30,14 @@ export async function renderBoard() {
     }</div></div>`;
   }).join('');
 
+  // Previous and Next in the drawer walk the board column by column.
+  const order = $$('#board .card').map((c) => c.dataset.id);
   $$('#board .card').forEach((c) => {
     c.addEventListener('click', () => {
       if (justDragged) { justDragged = false; return; }
-      openLead(c.dataset.id);
+      openLead(c.dataset.id, { list: order });
     });
-    c.addEventListener('keydown', (e) => { if (e.key === 'Enter') openLead(c.dataset.id); });
+    c.addEventListener('keydown', (e) => { if (e.key === 'Enter') openLead(c.dataset.id, { list: order }); });
 
     c.addEventListener('dragstart', (e) => {
       e.dataTransfer.setData('text/plain', c.dataset.id);

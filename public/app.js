@@ -10,7 +10,7 @@ import { renderBoard } from './modules/board.js';
 import { renderFollow } from './modules/followups.js';
 import { renderImport } from './modules/import.js';
 import { renderSettings } from './modules/settings.js';
-import { openLead, closeDrawer } from './modules/drawer.js';
+import { openLead, closeDrawer, stepDrawer } from './modules/drawer.js';
 
 const TITLES = { contacts: 'Contacts', leads: 'Leads', board: 'Board', follow: 'Follow-ups', import: 'Import leads', settings: 'Settings' };
 const DEFAULT_SUBS = { contacts: '', leads: '', board: 'Click a card to open it', follow: 'Overdue first, then today, then this week', import: 'CSV export from any spreadsheet', settings: '' };
@@ -80,7 +80,14 @@ function initChrome() {
 
   document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape') closeDrawer();
-    if (e.key === '/' && document.activeElement.tagName !== 'INPUT' && document.activeElement.tagName !== 'TEXTAREA') {
+    const typing = ['INPUT', 'TEXTAREA', 'SELECT'].includes(document.activeElement.tagName);
+    // Up and down arrows step through records while the drawer is open.
+    if (!typing && $('#drawer').classList.contains('open') && (e.key === 'ArrowDown' || e.key === 'ArrowUp')) {
+      e.preventDefault();
+      stepDrawer(e.key === 'ArrowDown' ? 1 : -1);
+      return;
+    }
+    if (e.key === '/' && !typing) {
       e.preventDefault();
       $('#q').focus();
     }

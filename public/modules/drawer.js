@@ -12,6 +12,9 @@ let current = null; // { lead, activities }
 let fieldTimer = null;
 let pendingPatch = {};
 let emailOpen = false;
+// Ids of the list the drawer was opened from, in the order shown on screen,
+// so Previous and Next walk the same sorted and filtered list.
+let navIds = [];
 
 function checklist() {
   return (state.settings && state.settings.checklist && state.settings.checklist.length === 4) ? state.settings.checklist : DEFAULT_CHECKLIST;
@@ -43,6 +46,8 @@ function customInput(f, value) {
 }
 
 export async function openLead(id, opts = {}) {
+  if (opts.list) navIds = opts.list.map(String);
+  else if (!navIds.includes(String(id))) navIds = [];
   state.selected = id;
   try {
     current = await api.getLead(id);
@@ -68,6 +73,21 @@ export function closeDrawer() {
   state.selected = null;
   current = null;
   emailOpen = false;
+  navIds = [];
+}
+
+// Moves the open drawer to the previous (-1) or next (+1) record in the list
+// it was opened from. Saves any edits still waiting first. Returns false when
+// there is nowhere to go.
+export async function stepDrawer(delta) {
+  if (!current) return false;
+  const i = navIds.indexOf(String(current.lead.id));
+  const target = i === -1 ? null : navIds[i + delta];
+  if (!target) return false;
+  clearTimeout(fieldTimer);
+  await flushFields();
+  await openLead(target);
+  return true;
 }
 
 function paint() {
@@ -80,6 +100,7 @@ function paint() {
   dr.innerHTML = `
     <div class="d-h"><div class="avatar" style="width:38px;height:38px;font-size:13px">${initials(l.name)}</div>
       <div><h2>${esc(l.name)}</h2><div class="co">${l.company ? esc(l.company) : 'No company yet'} &middot; ${esc(l.source || '')}</div></div>
+      ${navBar(l)}
       <button class="x" id="d-close" aria-label="Close">&#x2715;</button></div>
     <div class="d-b">
       ${l.is_contact
@@ -138,9 +159,23 @@ async function switchList(l, toContacts) {
   }
 }
 
+function navBar(l) {
+  const i = navIds.indexOf(String(l.id));
+  if (i === -1 || navIds.length < 2) return '';
+  return `<div class="d-nav">
+    <button class="btn sm ghost" id="d-prev" ${i === 0 ? 'disabled' : ''} aria-label="Previous" title="Previous (up arrow)">&lsaquo; Prev</button>
+    <span class="pos">${i + 1} of ${navIds.length}</span>
+    <button class="btn sm ghost" id="d-next" ${i === navIds.length - 1 ? 'disabled' : ''} aria-label="Next" title="Next (down arrow)">Next &rsaquo;</button>
+  </div>`;
+}
+
 function wire(l) {
   const dr = $('#drawer');
   $('#d-close', dr).onclick = closeDrawer;
+  const prevBtn = $('#d-prev', dr);
+  const nextBtn = $('#d-next', dr);
+  if (prevBtn) prevBtn.onclick = () => stepDrawer(-1);
+  if (nextBtn) nextBtn.onclick = () => stepDrawer(1);
   $('#d-done', dr).onclick = closeDrawer;
 
   const makeBtn = $('#d-make-lead', dr);

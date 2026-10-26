@@ -78,7 +78,8 @@ export async function renderContacts() {
       </tr>`).join('')
     : `<tr><td colspan="${cols}" class="empty">${loaded.length ? 'No contacts match. Try All or clear the search.' : 'No contacts yet. Import a list or add one with + New contact.'}</td></tr>`;
 
-  $$('#contact-rows tr[data-id]').forEach((row) => row.addEventListener('click', () => openLead(row.dataset.id)));
+  const order = $$('#contact-rows tr[data-id]').map((row) => row.dataset.id);
+  $$('#contact-rows tr[data-id]').forEach((row) => row.addEventListener('click', () => openLead(row.dataset.id, { list: order })));
   $$('#contact-rows [data-make]').forEach((b) => b.addEventListener('click', async (e) => {
     e.stopPropagation();
     b.disabled = true;

@@ -110,5 +110,6 @@ export async function renderLeads() {
         <td class="notes" title="${esc(l.notes)}"><div>${esc(l.notes).replace(/\n+/g, ' &middot; ')}</div></td>
       </tr>`).join('')
     : `<tr><td colspan="${8 + startFields.length + endFields.length}" class="empty">Nothing matches. Clear the filter or search.</td></tr>`;
-  $$('#rows tr[data-id]').forEach((row) => row.addEventListener('click', () => openLead(row.dataset.id)));
+  const order = $$('#rows tr[data-id]').map((row) => row.dataset.id);
+  $$('#rows tr[data-id]').forEach((row) => row.addEventListener('click', () => openLead(row.dataset.id, { list: order })));
 }

@@ -41,7 +41,8 @@ export async function renderFollow() {
     sec('This week', 'var(--blue)', week, (l) => `Due ${fmt(l.next_followup)}. ${esc(l.notes || '')}`) +
     (staleCount ? `<div class="note-banner"><b>${staleCount} lead${staleCount > 1 ? 's have' : ' has'}</b> had no contact in ${state.settings ? state.settings.stale_days : 14}+ days. <button class="btn sm" style="margin-left:auto" id="go-stale">Show them</button></div>` : '');
 
-  $$('#follow .frow').forEach((row) => row.addEventListener('click', (e) => { if (e.target.closest('button')) return; openLead(row.dataset.id); }));
+  const order = $$('#follow .frow').map((row) => row.dataset.id);
+  $$('#follow .frow').forEach((row) => row.addEventListener('click', (e) => { if (e.target.closest('button')) return; openLead(row.dataset.id, { list: order }); }));
   $$('#follow [data-act]').forEach((b) => b.addEventListener('click', async () => {
     const id = b.dataset.id;
     try {
