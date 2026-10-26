@@ -29,7 +29,7 @@ export async function renderSettings() {
 }
 
 function cloneFields(fields) {
-  return fields.map((f) => ({ key: f.key, label: f.label || '', type: f.type || 'text', options: Array.isArray(f.options) ? f.options.slice() : [] }));
+  return fields.map((f) => ({ key: f.key, label: f.label || '', type: f.type || 'text', options: Array.isArray(f.options) ? f.options.slice() : [], in_list: !!f.in_list }));
 }
 
 function splitList(text) {
@@ -52,6 +52,7 @@ function fieldRow(f) {
     ${typeSelect}
     <button class="btn sm ghost danger" data-remove="${esc(f.key)}" aria-label="Remove field">Remove</button>
     ${options}
+    <label class="check in-list"><input type="checkbox" data-p="in_list" ${f.in_list ? 'checked' : ''}> Show as a column on the Leads list</label>
   </div>`;
 }
 
@@ -65,6 +66,7 @@ function readFieldRows() {
       label: $('input[data-p="label"]', row).value.trim(),
       type: $('select[data-p="type"]', row).value,
       options: opts ? splitList(opts.value) : (fieldDraft.find((f) => f.key === row.dataset.key) || { options: [] }).options,
+      in_list: $('input[data-p="in_list"]', row).checked,
     };
   });
 }
@@ -130,7 +132,7 @@ function paint() {
 
   $('#add-field').addEventListener('click', () => {
     readFieldRows();
-    fieldDraft.push({ key: newFieldKey(), label: '', type: 'text', options: [] });
+    fieldDraft.push({ key: newFieldKey(), label: '', type: 'text', options: [], in_list: false });
     paint();
     const inputs = $$('#field-rows input[data-p="label"]');
     if (inputs.length) inputs[inputs.length - 1].focus();

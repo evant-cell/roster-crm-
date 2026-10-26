@@ -184,8 +184,14 @@ const demo = (() => {
     checklist: ['Has budget', 'Decision maker reached', 'Timeline inside 90 days', 'Fits service area'],
     stale_days: 14,
     digest: { enabled: true, hour: 8 },
-    custom_fields: [],
+    custom_fields: [
+      { key: 'f_demo_type', label: 'Type', type: 'dropdown', options: ['Potential Client', 'Advocate'], in_list: true },
+    ],
   };
+
+  // Sample values for the demo Type field.
+  const demoTypes = { 1: 'Potential Client', 2: 'Advocate', 3: 'Potential Client', 5: 'Advocate', 7: 'Potential Client', 8: 'Potential Client', 9: 'Advocate', 11: 'Potential Client', 13: 'Advocate' };
+  leads.forEach((l) => { if (demoTypes[l.id]) l.custom = { f_demo_type: demoTypes[l.id] }; });
 
   function mk(id, name, company, email, phone, stage, lastN, nextN, source, value, tags, qual, notes, log) {
     return {

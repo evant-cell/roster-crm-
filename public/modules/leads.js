@@ -1,6 +1,6 @@
 // Leads view: stat tiles, filter chips, search/sort backed table.
 
-import { $, $$, esc, money, fmt, rel, dueClass, dueText, isOpen, toast, STAGE_LABEL, STAGES, updateNavCounts } from './ui.js';
+import { $, $$, esc, money, fmt, rel, dueClass, dueText, isOpen, toast, STAGE_LABEL, STAGES, updateNavCounts, customFields } from './ui.js';
 import { state } from './state.js';
 import * as api from './api.js';
 import { openLead } from './drawer.js';
@@ -10,6 +10,33 @@ function queryParams() {
   if (state.filter === 'overdue' || state.filter === 'stale') params.filter = state.filter;
   else if (state.filter !== 'all') params.stage = state.filter;
   return params;
+}
+
+// Custom fields marked "Show as a column" in Settings get their own column,
+// shown before Name.
+function listFields() {
+  return customFields(state.settings).filter((f) => f.in_list);
+}
+
+function customCell(f, lead) {
+  const v = (lead.custom || {})[f.key];
+  if (v === null || v === undefined || v === '') return '';
+  if (f.type === 'currency') return money(v);
+  if (f.type === 'date') return fmt(v);
+  if (f.type === 'dropdown') return `<span class="tag">${esc(v)}</span>`;
+  return esc(v);
+}
+
+function paintCustomHeaders(fields) {
+  const row = $('thead tr');
+  $$('th.cf', row).forEach((th) => th.remove());
+  const nameHeader = row.firstElementChild;
+  fields.forEach((f) => {
+    const th = document.createElement('th');
+    th.className = 'cf';
+    th.textContent = f.label;
+    row.insertBefore(th, nameHeader);
+  });
 }
 
 export async function renderLeads() {
@@ -50,8 +77,12 @@ export async function renderLeads() {
     b.textContent = b.textContent.replace(/[ ↑↓]+$/, '') + (b.dataset.sort === state.sortKey ? (state.sortDir > 0 ? ' ↑' : ' ↓') : '');
   });
 
+  const fields = listFields();
+  paintCustomHeaders(fields);
+
   $('#rows').innerHTML = state.leads.length
     ? state.leads.map((l) => `<tr data-id="${l.id}" class="${state.selected === l.id ? 'sel' : ''}">
+        ${fields.map((f) => `<td class="cf">${customCell(f, l)}</td>`).join('')}
         <td><div class="name">${esc(l.name)}</div></td>
         <td>${l.company ? esc(l.company) : '<span class="co">no company</span>'}</td>
         <td><div style="font-size:12.5px">${esc(l.email)}</div><div class="co mono">${esc(l.phone)}</div></td>
@@ -60,6 +91,6 @@ export async function renderLeads() {
         <td class="due ${isOpen(l) ? dueClass(l.next_followup) : 'none'}">${isOpen(l) ? dueText(l.next_followup) : 'closed'}</td>
         <td>${(l.tags || []).map((t) => `<span class="tag">${esc(t)}</span>`).join('')}</td>
       </tr>`).join('')
-    : `<tr><td colspan="7" class="empty">Nothing matches. Clear the filter or search.</td></tr>`;
+    : `<tr><td colspan="${7 + fields.length}" class="empty">Nothing matches. Clear the filter or search.</td></tr>`;
   $$('#rows tr[data-id]').forEach((row) => row.addEventListener('click', () => openLead(row.dataset.id)));
 }
